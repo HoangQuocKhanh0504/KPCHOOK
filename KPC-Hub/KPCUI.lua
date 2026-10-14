@@ -6,7 +6,7 @@
 
 local KPCUI = {}
 KPCUI.__index = KPCUI
-KPCUI.Version = "1.0.0"
+KPCUI.Version = "1.3.0"
 
 -- ============================================================
 -- SERVICES
