@@ -1,12 +1,12 @@
 -- ============================================================
 -- KPCUI — Library giao diện cho Roblox Executor
 -- Tác giả: KPC
--- Version: 1.1.0
+-- Version: 1.2.0
 -- ============================================================
 
 local KPCUI = {}
 KPCUI.__index = KPCUI
-KPCUI.Version = "1.1.0"
+KPCUI.Version = "1.2.0"
 
 -- ============================================================
 -- SERVICES
@@ -191,6 +191,15 @@ local function GetParentGui()
     return CoreGui
 end
 
+local function SimpleHash(s)
+    if type(s) ~= "string" then return "0" end
+    local h = 5381
+    for i = 1, #s do
+        h = (h * 33 + s:byte(i)) % 2147483647
+    end
+    return tostring(h)
+end
+
 -- ============================================================
 -- STATE
 -- ============================================================
@@ -203,28 +212,66 @@ local Windows        = {}
 local PARENT         = GetParentGui()
 local Destroyed      = false
 
--- Logo + Avatar state
+-- Single-instance guard state
+local GuardConfig = {
+    Enabled = true,
+    Key = "KPCUI_INSTANCE",
+}
+
+-- Logo state
 local LogoConfig = {
     Enabled = true,
     Image = "https://cdn.jsdelivr.net/gh/HoangQuocKhanh0504/KPCHOOK@root/LOGO-KPCHOOK.png",
     Size = 120,
     OffsetY = 0,
-    CustomAsset = nil,  -- resolved asset ID
+    CustomAsset = nil,
     Frame = nil,
     ImageLabel = nil,
 }
 
+-- Avatar state
 local AvatarConfig = {
     Enabled = true,
     BorderColor = Color3.fromRGB(255, 90, 30),
     BorderThickness = 3,
-    Side = "Left",  -- "Left" or "Right"
+    Side = "Left",
     Size = 110,
     OffsetY = 70,
     Frame = nil,
     Stroke = nil,
     ImageLabel = nil,
 }
+
+-- ============================================================
+-- SINGLE-INSTANCE GUARD
+-- ============================================================
+local function RegisterInstance()
+    if not GuardConfig.Enabled then return end
+    if not getgenv then return end
+    local g = getgenv()
+    if not g[GuardConfig.Key] then
+        g[GuardConfig.Key] = {}
+    end
+    local instanceId = tostring(tick()) .. "_" .. tostring(math.random(1, 1e9))
+    g[GuardConfig.Key][instanceId] = {
+        time = os.time(),
+        id = instanceId,
+    }
+end
+
+local function ClearOtherInstances(keepId)
+    if not getgenv then return 0 end
+    local g = getgenv()
+    if not g[GuardConfig.Key] then return 0 end
+    local count = 0
+    for id, _ in pairs(g[GuardConfig.Key]) do
+        if id ~= keepId then
+            count = count + 1
+        end
+    end
+    g[GuardConfig.Key] = {}
+    return count
+end
 
 -- ============================================================
 -- NOTIFY
@@ -327,7 +374,7 @@ local function ResolveAssetFromUrl(url)
         pcall(makefolder, "kpchook")
     end
 
-    local hash = tostring(#url) .. "_" .. tostring(url:byte(1, 8):gsub("[^%w]", ""))
+    local hash = SimpleHash(url)
     local path = "kpchook/_kpcui_" .. hash .. ".png"
 
     if not isfile(path) then
@@ -403,7 +450,7 @@ local function CreateAvatarFrame()
         BackgroundTransparency = 1,
         Image = "rbxthumb://type=AvatarHeadShot&id=" .. tostring(lplr.UserId) .. "&w=420&h=420",
         ZIndex = 9981,
-    }, img == nil and frame or frame)
+    }, frame)
     Corner(img, 999)
     AvatarConfig.ImageLabel = img
 end
@@ -881,7 +928,6 @@ local function BuildWindow(cfg)
         end
     end)
 
-    -- Apply Logo config from cfg
     if cfg.Logo then
         if cfg.Logo.Enabled ~= nil then LogoConfig.Enabled = cfg.Logo.Enabled end
         if cfg.Logo.Image then LogoConfig.Image = cfg.Logo.Image end
@@ -889,7 +935,6 @@ local function BuildWindow(cfg)
         if cfg.Logo.OffsetY then LogoConfig.OffsetY = cfg.Logo.OffsetY end
     end
 
-    -- Apply Avatar config from cfg
     if cfg.Avatar then
         if cfg.Avatar.Enabled ~= nil then AvatarConfig.Enabled = cfg.Avatar.Enabled end
         if cfg.Avatar.BorderColor then AvatarConfig.BorderColor = cfg.Avatar.BorderColor end
@@ -899,7 +944,6 @@ local function BuildWindow(cfg)
         if cfg.Avatar.OffsetY then AvatarConfig.OffsetY = cfg.Avatar.OffsetY end
     end
 
-    -- Create frames once
     if LogoConfig.Enabled then CreateLogoFrame() end
     if AvatarConfig.Enabled then CreateAvatarFrame() end
 
@@ -1989,6 +2033,40 @@ function KPCUI:GetScreen()
 end
 
 -- ============================================================
+-- SINGLE-INSTANCE GUARD API
+-- ============================================================
+function KPCUI:SetGuardEnabled(enabled)
+    GuardConfig.Enabled = enabled and true or false
+end
+
+function KPCUI:IsGuardEnabled()
+    return GuardConfig.Enabled
+end
+
+function KPCUI:SetGuardKey(key)
+    if type(key) == "string" and #key > 0 then
+        GuardConfig.Key = key
+    end
+end
+
+function KPCUI:GetGuardKey()
+    return GuardConfig.Key
+end
+
+function KPCUI:ClearOtherInstances()
+    return ClearOtherInstances()
+end
+
+function KPCUI:GetInstanceCount()
+    if not getgenv then return 0 end
+    local g = getgenv()
+    if not g[GuardConfig.Key] then return 0 end
+    local count = 0
+    for _ in pairs(g[GuardConfig.Key]) do count = count + 1 end
+    return count
+end
+
+-- ============================================================
 -- LOGO API
 -- ============================================================
 function KPCUI:SetLogoEnabled(enabled)
@@ -2125,5 +2203,8 @@ end
 -- INIT
 -- ============================================================
 InitScreen()
+
+-- Đăng ký instance để chống trồng script
+RegisterInstance()
 
 return KPCUI
