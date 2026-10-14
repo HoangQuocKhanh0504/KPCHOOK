@@ -1,12 +1,12 @@
 -- ============================================================
 -- KPCUI — Library giao diện cho Roblox Executor
--- Tác giả: KPC
+-- Tác giả: KPC*
 -- Version: 1.3.0
 -- ============================================================
 
 local KPCUI = {}
 KPCUI.__index = KPCUI
-KPCUI.Version = "1.3.0"
+KPCUI.Version = "1.0.0"
 
 -- ============================================================
 -- SERVICES
@@ -191,15 +191,6 @@ local function GetParentGui()
     return CoreGui
 end
 
-local function SimpleHash(s)
-    if type(s) ~= "string" then return "0" end
-    local h = 5381
-    for i = 1, #s do
-        h = (h * 33 + s:byte(i)) % 2147483647
-    end
-    return tostring(h)
-end
-
 -- ============================================================
 -- STATE
 -- ============================================================
@@ -211,107 +202,6 @@ local NotifyHistory  = {}
 local Windows        = {}
 local PARENT         = GetParentGui()
 local Destroyed      = false
-
--- Single-instance guard state
-local GuardConfig = {
-    Enabled = true,
-    Key = "KPCUI_INSTANCE",
-}
-
--- Logo state
-local LogoConfig = {
-    Enabled = true,
-    Image = "https://cdn.jsdelivr.net/gh/HoangQuocKhanh0504/KPCHOOK@root/LOGO-KPCHOOK.png",
-    Size = 120,
-    OffsetY = 0,
-    CustomAsset = nil,
-    Frame = nil,
-    ImageLabel = nil,
-}
-
--- Avatar state
-local AvatarConfig = {
-    Enabled = true,
-    BorderColor = Color3.fromRGB(255, 90, 30),
-    BorderThickness = 3,
-    Side = "Left",
-    Size = 110,
-    OffsetY = 70,
-    Frame = nil,
-    Stroke = nil,
-    ImageLabel = nil,
-}
-
--- ============================================================
--- SINGLE-INSTANCE GUARD (destroy old instances)
--- ============================================================
-local function DestroyOldInstances()
-    if not getgenv then return 0 end
-    local g = getgenv()
-    local destroyed = 0
-
-    -- Destroy from stored instances (nếu có)
-    if g[GuardConfig.Key] and type(g[GuardConfig.Key]) == "table" then
-        for id, data in pairs(g[GuardConfig.Key]) do
-            if type(data) == "table" and data.destroy then
-                pcall(data.destroy)
-                destroyed = destroyed + 1
-            end
-        end
-    end
-
-    -- Fallback: destroy ScreenGui named "KPCUI" trong CoreGui/hui
-    local function tryDestroyIn(root)
-        if not root then return end
-        for _, obj in ipairs(root:GetChildren()) do
-            if obj.Name == "KPCUI" then
-                pcall(function() obj:Destroy() end)
-                destroyed = destroyed + 1
-            end
-        end
-    end
-
-    tryDestroyIn(CoreGui)
-    if gethui then
-        local ok, hui = pcall(gethui)
-        if ok and hui then tryDestroyIn(hui) end
-    end
-    if lplr and lplr:FindFirstChild("PlayerGui") then
-        tryDestroyIn(lplr.PlayerGui)
-    end
-
-    g[GuardConfig.Key] = {}
-    return destroyed
-end
-
-local function RegisterInstance(destroyFn)
-    if not GuardConfig.Enabled then return end
-    if not getgenv then return end
-    local g = getgenv()
-    if not g[GuardConfig.Key] or type(g[GuardConfig.Key]) ~= "table" then
-        g[GuardConfig.Key] = {}
-    end
-    local instanceId = tostring(tick()) .. "_" .. tostring(math.random(1, 1e9))
-    g[GuardConfig.Key][instanceId] = {
-        time = os.time(),
-        id = instanceId,
-        destroy = destroyFn,
-    }
-end
-
-local function UnregisterInstance()
-    if not getgenv then return end
-    local g = getgenv()
-    if not g[GuardConfig.Key] then return end
-    for id, data in pairs(g[GuardConfig.Key]) do
-        if type(data) == "table" and data.id then
-            -- Chỉ xoá instance của chính mình (dùng flag nội bộ)
-            if data.self then
-                g[GuardConfig.Key][id] = nil
-            end
-        end
-    end
-end
 
 -- ============================================================
 -- NOTIFY
@@ -400,220 +290,6 @@ local function Notify(opts)
             BackgroundTransparency = 1,
         }, 0.35)
         tw.Completed:Connect(function() n:Destroy() end)
-    end)
-end
-
--- ============================================================
--- LOGO + AVATAR
--- ============================================================
-local function ResolveAssetFromUrl(url)
-    if not url or url == "" then return nil end
-    if not (writefile and isfile and getcustomasset and makefolder) then return nil end
-
-    if not isfolder or not isfolder("kpchook") then
-        pcall(makefolder, "kpchook")
-    end
-
-    local hash = SimpleHash(url)
-    local path = "kpchook/_kpcui_" .. hash .. ".png"
-
-    if not isfile(path) then
-        local ok, data = pcall(function() return game:HttpGet(url, true) end)
-        if not ok or type(data) ~= "string" or #data < 100 then return nil end
-        local writeOk = pcall(function() writefile(path, data) end)
-        if not writeOk then return nil end
-    end
-
-    local ok, asset = pcall(getcustomasset, path)
-    if ok and asset then return asset end
-    return nil
-end
-
-local function CreateLogoFrame()
-    if LogoConfig.Frame and LogoConfig.Frame.Parent then return end
-    if not Screen or not Screen.Parent then return end
-
-    local frame = Make("Frame", {
-        Name = "KPCUI_Logo",
-        Size = UDim2.fromOffset(LogoConfig.Size, LogoConfig.Size),
-        BackgroundTransparency = 1,
-        BorderSizePixel = 0,
-        Visible = false,
-        ZIndex = 9990,
-    }, Screen)
-    LogoConfig.Frame = frame
-
-    local img = Make("ImageLabel", {
-        Name = "LogoImage",
-        Size = UDim2.fromScale(1, 1),
-        BackgroundTransparency = 1,
-        Image = "",
-        ScaleType = Enum.ScaleType.Fit,
-        ZIndex = 9991,
-    }, frame)
-    LogoConfig.ImageLabel = img
-
-    task.spawn(function()
-        local asset = ResolveAssetFromUrl(LogoConfig.Image)
-        if asset and LogoConfig.ImageLabel and LogoConfig.ImageLabel.Parent then
-            LogoConfig.ImageLabel.Image = asset
-            LogoConfig.CustomAsset = asset
-        end
-    end)
-end
-
-local function CreateAvatarFrame()
-    if AvatarConfig.Frame and AvatarConfig.Frame.Parent then return end
-    if not Screen or not Screen.Parent then return end
-
-    local frame = Make("Frame", {
-        Name = "KPCUI_Avatar",
-        Size = UDim2.fromOffset(AvatarConfig.Size, AvatarConfig.Size),
-        BackgroundTransparency = 1,
-        BorderSizePixel = 0,
-        Visible = false,
-        ZIndex = 9980,
-    }, Screen)
-    Corner(frame, 999)
-    AvatarConfig.Frame = frame
-
-    local stroke = Make("UIStroke", {
-        Name = "AvatarBorder",
-        Thickness = AvatarConfig.BorderThickness,
-        Color = AvatarConfig.BorderColor,
-    }, frame)
-    AvatarConfig.Stroke = stroke
-
-    local img = Make("ImageLabel", {
-        Name = "AvatarImage",
-        Size = UDim2.fromScale(1, 1),
-        BackgroundTransparency = 1,
-        Image = "rbxthumb://type=AvatarHeadShot&id=" .. tostring(lplr.UserId) .. "&w=420&h=420",
-        ZIndex = 9981,
-    }, frame)
-    Corner(img, 999)
-    AvatarConfig.ImageLabel = img
-end
-
--- Cache để tránh set Position mỗi frame khi không đổi
-local _lastLogoPos = Vector2.new(-1, -1)
-local _lastLogoSize = -1
-local _lastLogoVisible = nil
-local _lastAvatarPos = Vector2.new(-1, -1)
-local _lastAvatarSize = -1
-local _lastAvatarVisible = nil
-
-local function GetFirstVisibleWindow()
-    for _, w in ipairs(Windows) do
-        if w._main and w._main.Visible then
-            local sz = w._main.AbsoluteSize
-            if sz.X > 50 and sz.Y > 50 then
-                return w
-            end
-        end
-    end
-    return nil
-end
-
-local function UpdateLogoVisibility()
-    if not LogoConfig.Frame or not LogoConfig.Frame.Parent then return end
-    if not LogoConfig.Enabled then
-        if _lastLogoVisible ~= false then
-            LogoConfig.Frame.Visible = false
-            _lastLogoVisible = false
-        end
-        return
-    end
-
-    local w = GetFirstVisibleWindow()
-    if not w then
-        if _lastLogoVisible ~= false then
-            LogoConfig.Frame.Visible = false
-            _lastLogoVisible = false
-        end
-        return
-    end
-
-    local pos = w._main.AbsolutePosition
-    local size = w._main.AbsoluteSize
-    local lgSize = LogoConfig.Size
-    local lgX = pos.X + (size.X - lgSize) / 2
-    local lgY = pos.Y + LogoConfig.OffsetY
-    local vp = workspace.CurrentCamera.ViewportSize
-    lgX = math.clamp(lgX, 0, math.max(0, vp.X - lgSize))
-    lgY = math.clamp(lgY, 0, math.max(0, vp.Y - lgSize))
-
-    local newPos = Vector2.new(lgX, lgY)
-    if newPos ~= _lastLogoPos or lgSize ~= _lastLogoSize then
-        _lastLogoPos = newPos
-        _lastLogoSize = lgSize
-        LogoConfig.Frame.Position = UDim2.fromOffset(lgX, lgY)
-        LogoConfig.Frame.Size = UDim2.fromOffset(lgSize, lgSize)
-    end
-    if _lastLogoVisible ~= true then
-        LogoConfig.Frame.Visible = true
-        _lastLogoVisible = true
-    end
-end
-
-local function UpdateAvatarVisibility()
-    if not AvatarConfig.Frame or not AvatarConfig.Frame.Parent then return end
-    if not AvatarConfig.Enabled then
-        if _lastAvatarVisible ~= false then
-            AvatarConfig.Frame.Visible = false
-            _lastAvatarVisible = false
-        end
-        return
-    end
-
-    local w = GetFirstVisibleWindow()
-    if not w then
-        if _lastAvatarVisible ~= false then
-            AvatarConfig.Frame.Visible = false
-            _lastAvatarVisible = false
-        end
-        return
-    end
-
-    local pos = w._main.AbsolutePosition
-    local size = w._main.AbsoluteSize
-    local avSize = AvatarConfig.Size
-    local avX, avY
-    if AvatarConfig.Side == "Right" then
-        avX = pos.X + size.X + 10
-    else
-        avX = pos.X - avSize - 10
-    end
-    avY = pos.Y + AvatarConfig.OffsetY
-    local vp = workspace.CurrentCamera.ViewportSize
-    avX = math.clamp(avX, 0, math.max(0, vp.X - avSize))
-    avY = math.clamp(avY, 0, math.max(0, vp.Y - avSize))
-
-    local newPos = Vector2.new(avX, avY)
-    if newPos ~= _lastAvatarPos or avSize ~= _lastAvatarSize then
-        _lastAvatarPos = newPos
-        _lastAvatarSize = avSize
-        AvatarConfig.Frame.Position = UDim2.fromOffset(avX, avY)
-        AvatarConfig.Frame.Size = UDim2.fromOffset(avSize, avSize)
-    end
-    if _lastAvatarVisible ~= true then
-        AvatarConfig.Frame.Visible = true
-        _lastAvatarVisible = true
-    end
-end
-
--- Bind render step đồng bộ với Camera (chạy trước khi render frame)
-local LOGO_RENDER_BINDING = "KPCUI_LogoAvatarSync"
-local function StartLogoAvatarLoop()
-    if KPCUI._logoLoopRunning then return end
-    KPCUI._logoLoopRunning = true
-    pcall(function()
-        RunService:UnbindFromRenderStep(LOGO_RENDER_BINDING)
-    end)
-    RunService:BindToRenderStep(LOGO_RENDER_BINDING, Enum.RenderPriority.Camera.Value + 10, function()
-        if Destroyed then return end
-        pcall(UpdateLogoVisibility)
-        pcall(UpdateAvatarVisibility)
     end)
 end
 
@@ -843,6 +519,7 @@ local function BuildWindow(cfg)
     WinBtn("✕", -38, GetTheme().danger, Collapse)
     WinBtn("—", -74, GetTheme().accent, Collapse)
 
+    -- Drag
     do
         local dragging = false
         local dragOffset = Vector2.new(0, 0)
@@ -894,6 +571,7 @@ local function BuildWindow(cfg)
         end)
     end
 
+    -- Sidebar
     local SIDEBAR_W = isMobile and 130 or 160
 
     local Sidebar = Make("ScrollingFrame", {
@@ -976,6 +654,7 @@ local function BuildWindow(cfg)
         end)
     end)
 
+    -- Toggle keybind
     local toggleKey = cfg.ToggleUIKeybind or Enum.KeyCode.RightShift
     self._toggleKey = toggleKey
     UserInputService.InputBegan:Connect(function(input, gp)
@@ -985,6 +664,7 @@ local function BuildWindow(cfg)
         end
     end)
 
+    -- Search
     searchBox:GetPropertyChangedSignal("Text"):Connect(function()
         local q = searchBox.Text:lower()
         for _, t in ipairs(self._tabs) do
@@ -997,28 +677,8 @@ local function BuildWindow(cfg)
         end
     end)
 
-    if cfg.Logo then
-        if cfg.Logo.Enabled ~= nil then LogoConfig.Enabled = cfg.Logo.Enabled end
-        if cfg.Logo.Image then LogoConfig.Image = cfg.Logo.Image end
-        if cfg.Logo.Size then LogoConfig.Size = cfg.Logo.Size end
-        if cfg.Logo.OffsetY then LogoConfig.OffsetY = cfg.Logo.OffsetY end
-    end
-
-    if cfg.Avatar then
-        if cfg.Avatar.Enabled ~= nil then AvatarConfig.Enabled = cfg.Avatar.Enabled end
-        if cfg.Avatar.BorderColor then AvatarConfig.BorderColor = cfg.Avatar.BorderColor end
-        if cfg.Avatar.BorderThickness then AvatarConfig.BorderThickness = cfg.Avatar.BorderThickness end
-        if cfg.Avatar.Side then AvatarConfig.Side = cfg.Avatar.Side end
-        if cfg.Avatar.Size then AvatarConfig.Size = cfg.Avatar.Size end
-        if cfg.Avatar.OffsetY then AvatarConfig.OffsetY = cfg.Avatar.OffsetY end
-    end
-
-    if LogoConfig.Enabled then CreateLogoFrame() end
-    if AvatarConfig.Enabled then CreateAvatarFrame() end
-
     Expand()
     table.insert(Windows, self)
-    StartLogoAvatarLoop()
     return self
 end
 
@@ -1119,8 +779,6 @@ function Window:CreateTab(name, icon)
         self._activeTab = tab
     end
 
-    tab._select = select
-
     btn.MouseButton1Click:Connect(select)
     btn.MouseEnter:Connect(function()
         if self._activeTab ~= tab then
@@ -1163,48 +821,15 @@ function Window:UpdateStats(fps, ping)
     end
 end
 
-function Window:Collapse()
-    if self._collapse then self._collapse() end
-end
-
-function Window:Expand()
-    if self._expand then self._expand() end
-end
-
-function Window:IsVisible()
-    return self._main and self._main.Visible or false
-end
+function Window:Collapse() if self._collapse then self._collapse() end end
+function Window:Expand()   if self._expand then self._expand() end end
 
 function Window:SetTitle(text)
-    if not self._main then return end
-    local tb = self._main:FindFirstChild("TitleBar")
+    local tb = self._main and self._main:FindFirstChild("TitleBar")
     if not tb then return end
     for _, c in ipairs(tb:GetChildren()) do
         if c:IsA("TextLabel") and c.TextSize == 15 then
             c.Text = text
-        end
-    end
-end
-
-function Window:SetSubtitle(text)
-    if not self._main then return end
-    local tb = self._main:FindFirstChild("TitleBar")
-    if not tb then return end
-    for _, c in ipairs(tb:GetChildren()) do
-        if c:IsA("TextLabel") and c.TextSize == 11 and c.TextColor3 ~= GetTheme().textDim then
-            c.Text = text and ("• " .. text) or ""
-        end
-    end
-end
-
-function Window:Destroy()
-    if self._main then
-        pcall(function() self._main:Destroy() end)
-    end
-    for i, w in ipairs(Windows) do
-        if w == self then
-            table.remove(Windows, i)
-            break
         end
     end
 end
@@ -1319,10 +944,7 @@ function Tab:CreateButton(cfg)
             rowStroke.Color = themeObj.stroke
         end
     end)
-    local obj = { _row = row }
-    function obj:Set(v) row.Text = tostring(v) end
-    function obj:Get() return row.Text end
-    return obj
+    return row
 end
 
 function Tab:CreateToggle(cfg)
@@ -1718,7 +1340,7 @@ function Tab:CreateDropdown(cfg)
         if not open then Tween(row, { BackgroundColor3 = GetTheme().panel }, 0.15) end
     end)
 
-    local function BuildOption(i, opt)
+    for i, opt in ipairs(options) do
         local o = Make("TextButton", {
             Size = UDim2.new(1, 0, 0, 24),
             BackgroundColor3 = GetTheme().panel2,
@@ -1748,10 +1370,6 @@ function Tab:CreateDropdown(cfg)
             end
         end)
         table.insert(optionButtons, o)
-    end
-
-    for i, opt in ipairs(options) do
-        BuildOption(i, opt)
     end
 
     if flag then FlagStore[flag] = { current } end
@@ -1786,7 +1404,35 @@ function Tab:CreateDropdown(cfg)
         end
         optionButtons = {}
         for i, opt in ipairs(options) do
-            BuildOption(i, opt)
+            local o = Make("TextButton", {
+                Size = UDim2.new(1, 0, 0, 24),
+                BackgroundColor3 = GetTheme().panel2,
+                Text = tostring(opt),
+                TextColor3 = GetTheme().text,
+                TextSize = 12,
+                Font = Enum.Font.Gotham,
+                AutoButtonColor = false,
+                BorderSizePixel = 0,
+                ZIndex = 61,
+                LayoutOrder = i,
+            }, content)
+            Corner(o, 6)
+            o.MouseEnter:Connect(function()
+                Tween(o, { BackgroundColor3 = GetTheme().panel }, 0.15)
+            end)
+            o.MouseLeave:Connect(function()
+                Tween(o, { BackgroundColor3 = GetTheme().panel2 }, 0.15)
+            end)
+            o.MouseButton1Click:Connect(function()
+                current = opt
+                valLbl.Text = tostring(opt) .. " ▾"
+                Close()
+                if flag then FlagStore[flag] = { current } end
+                if cfg.Callback then
+                    task.spawn(function() pcall(cfg.Callback, { current }) end)
+                end
+            end)
+            table.insert(optionButtons, o)
         end
         if keepCurrent and current then
             obj:Set(current)
@@ -1950,89 +1596,6 @@ function Tab:CreateColorPicker(cfg)
     return obj
 end
 
-function Tab:CreateKeybind(cfg)
-    cfg = cfg or {}
-    local flag = cfg.Flag
-    local currentKey = cfg.CurrentKeybind or Enum.KeyCode.Unknown
-
-    local row = Make("Frame", {
-        Size = UDim2.new(1, 0, 0, 36),
-        BackgroundColor3 = GetTheme().panel,
-        BorderSizePixel = 0,
-        LayoutOrder = NextOrder(self),
-        ZIndex = 7,
-    }, self._container)
-    Corner(row, 8)
-    local rowStroke = Stroke(row, GetTheme().stroke, 1)
-    local rowLbl = Make("TextLabel", {
-        Size = UDim2.new(1, -110, 1, 0),
-        Position = UDim2.fromOffset(12, 0),
-        BackgroundTransparency = 1,
-        Text = cfg.Name or "Keybind",
-        TextColor3 = GetTheme().text,
-        TextSize = 13,
-        Font = Enum.Font.Gotham,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        ZIndex = 8,
-    }, row)
-    local valBtn = Make("TextButton", {
-        Size = UDim2.fromOffset(90, 24),
-        Position = UDim2.new(1, -102, 0.5, -12),
-        BackgroundColor3 = GetTheme().panel2,
-        Text = currentKey.Name,
-        TextColor3 = GetTheme().accent,
-        TextSize = 12,
-        Font = Enum.Font.GothamBold,
-        AutoButtonColor = false,
-        BorderSizePixel = 0,
-        ZIndex = 8,
-    }, row)
-    Corner(valBtn, 6)
-
-    local listening = false
-    valBtn.MouseButton1Click:Connect(function()
-        if listening then return end
-        listening = true
-        valBtn.Text = "..."
-        valBtn.TextColor3 = GetTheme().warning
-
-        local conn
-        conn = UserInputService.InputBegan:Connect(function(input, gp)
-            if gp then return end
-            if input.UserInputType ~= Enum.UserInputType.Keyboard then return end
-            if conn then conn:Disconnect(); conn = nil end
-            listening = false
-            currentKey = input.KeyCode
-            valBtn.Text = currentKey.Name
-            valBtn.TextColor3 = GetTheme().accent
-            if flag then FlagStore[flag] = currentKey end
-            if cfg.Callback then
-                task.spawn(function() pcall(cfg.Callback, currentKey) end)
-            end
-        end)
-    end)
-
-    if flag then FlagStore[flag] = currentKey end
-
-    RegisterThemeListener(function(themeObj)
-        if not row or not row.Parent then return end
-        row.BackgroundColor3 = themeObj.panel
-        rowLbl.TextColor3 = themeObj.text
-        rowStroke.Color = themeObj.stroke
-        valBtn.BackgroundColor3 = themeObj.panel2
-        if not listening then valBtn.TextColor3 = themeObj.accent end
-    end)
-
-    local obj = { _row = row }
-    function obj:Set(kc)
-        currentKey = kc
-        valBtn.Text = kc.Name
-        if flag then FlagStore[flag] = kc end
-    end
-    function obj:Get() return currentKey end
-    return obj
-end
-
 -- ============================================================
 -- PUBLIC API
 -- ============================================================
@@ -2052,10 +1615,6 @@ end
 
 function KPCUI:GetFlag(flag)
     return FlagStore[flag]
-end
-
-function KPCUI:GetAllFlags()
-    return FlagStore
 end
 
 function KPCUI:SetToggleKeybind(kc)
@@ -2101,149 +1660,6 @@ function KPCUI:GetScreen()
     return Screen
 end
 
--- ============================================================
--- SINGLE-INSTANCE GUARD API
--- ============================================================
-function KPCUI:SetGuardEnabled(enabled)
-    GuardConfig.Enabled = enabled and true or false
-end
-
-function KPCUI:IsGuardEnabled()
-    return GuardConfig.Enabled
-end
-
-function KPCUI:SetGuardKey(key)
-    if type(key) == "string" and #key > 0 then
-        GuardConfig.Key = key
-    end
-end
-
-function KPCUI:GetGuardKey()
-    return GuardConfig.Key
-end
-
-function KPCUI:ClearOtherInstances()
-    return DestroyOldInstances()
-end
-
-function KPCUI:GetInstanceCount()
-    if not getgenv then return 0 end
-    local g = getgenv()
-    if not g[GuardConfig.Key] then return 0 end
-    local count = 0
-    for _ in pairs(g[GuardConfig.Key]) do count = count + 1 end
-    return count
-end
-
--- ============================================================
--- LOGO API
--- ============================================================
-function KPCUI:SetLogoEnabled(enabled)
-    LogoConfig.Enabled = enabled and true or false
-    if LogoConfig.Enabled and (not LogoConfig.Frame or not LogoConfig.Frame.Parent) then
-        CreateLogoFrame()
-    end
-    if LogoConfig.Frame then
-        LogoConfig.Frame.Visible = LogoConfig.Enabled
-    end
-    _lastLogoVisible = nil
-end
-
-function KPCUI:SetLogoImage(url)
-    LogoConfig.Image = url
-    LogoConfig.CustomAsset = nil
-    if LogoConfig.ImageLabel then
-        LogoConfig.ImageLabel.Image = ""
-        task.spawn(function()
-            local asset = ResolveAssetFromUrl(url)
-            if asset and LogoConfig.ImageLabel and LogoConfig.ImageLabel.Parent then
-                LogoConfig.ImageLabel.Image = asset
-                LogoConfig.CustomAsset = asset
-            end
-        end)
-    end
-end
-
-function KPCUI:SetLogoSize(size)
-    LogoConfig.Size = tonumber(size) or LogoConfig.Size
-    if LogoConfig.Frame then
-        LogoConfig.Frame.Size = UDim2.fromOffset(LogoConfig.Size, LogoConfig.Size)
-    end
-end
-
-function KPCUI:SetLogoOffsetY(y)
-    LogoConfig.OffsetY = tonumber(y) or LogoConfig.OffsetY
-end
-
-function KPCUI:GetLogoConfig()
-    return {
-        Enabled = LogoConfig.Enabled,
-        Image = LogoConfig.Image,
-        Size = LogoConfig.Size,
-        OffsetY = LogoConfig.OffsetY,
-    }
-end
-
--- ============================================================
--- AVATAR API
--- ============================================================
-function KPCUI:SetAvatarEnabled(enabled)
-    AvatarConfig.Enabled = enabled and true or false
-    if AvatarConfig.Enabled and (not AvatarConfig.Frame or not AvatarConfig.Frame.Parent) then
-        CreateAvatarFrame()
-    end
-    if AvatarConfig.Frame then
-        AvatarConfig.Frame.Visible = AvatarConfig.Enabled
-    end
-    _lastAvatarVisible = nil
-end
-
-function KPCUI:SetAvatarBorderColor(color)
-    if typeof(color) ~= "Color3" then return end
-    AvatarConfig.BorderColor = color
-    if AvatarConfig.Stroke then
-        AvatarConfig.Stroke.Color = color
-    end
-end
-
-function KPCUI:SetAvatarBorderThickness(thickness)
-    AvatarConfig.BorderThickness = tonumber(thickness) or AvatarConfig.BorderThickness
-    if AvatarConfig.Stroke then
-        AvatarConfig.Stroke.Thickness = AvatarConfig.BorderThickness
-    end
-end
-
-function KPCUI:SetAvatarSide(side)
-    if side == "Left" or side == "Right" then
-        AvatarConfig.Side = side
-    end
-end
-
-function KPCUI:SetAvatarSize(size)
-    AvatarConfig.Size = tonumber(size) or AvatarConfig.Size
-    if AvatarConfig.Frame then
-        AvatarConfig.Frame.Size = UDim2.fromOffset(AvatarConfig.Size, AvatarConfig.Size)
-    end
-end
-
-function KPCUI:SetAvatarOffsetY(y)
-    AvatarConfig.OffsetY = tonumber(y) or AvatarConfig.OffsetY
-end
-
-function KPCUI:GetAvatarConfig()
-    return {
-        Enabled = AvatarConfig.Enabled,
-        BorderColor = AvatarConfig.BorderColor,
-        BorderThickness = AvatarConfig.BorderThickness,
-        Side = AvatarConfig.Side,
-        Size = AvatarConfig.Size,
-        OffsetY = AvatarConfig.OffsetY,
-    }
-end
-
--- ============================================================
--- DESTROY
--- ============================================================
 function KPCUI:Destroy()
     Destroyed = true
     for _, w in ipairs(Windows) do
@@ -2261,16 +1677,6 @@ function KPCUI:Destroy()
             end
         end
     end)
-    LogoConfig.Frame = nil
-    LogoConfig.ImageLabel = nil
-    AvatarConfig.Frame = nil
-    AvatarConfig.Stroke = nil
-    AvatarConfig.ImageLabel = nil
-    pcall(function()
-        RunService:UnbindFromRenderStep(LOGO_RENDER_BINDING)
-    end)
-    KPCUI._logoLoopRunning = false
-    UnregisterInstance()
     ThemeListeners = {}
     FlagStore = {}
 end
@@ -2279,31 +1685,5 @@ end
 -- INIT
 -- ============================================================
 InitScreen()
-
--- Destroy các instance cũ trước khi đăng ký cái mới
-if GuardConfig.Enabled then
-    DestroyOldInstances()
-end
-
--- Đăng ký instance mới với destroy callback
-local _myDestroyFn = function()
-    pcall(function()
-        if Screen then Screen:Destroy() end
-    end)
-    pcall(function()
-        if BlurEffect then BlurEffect:Destroy() end
-    end)
-    pcall(function()
-        for _, obj in ipairs(Lighting:GetChildren()) do
-            if obj:IsA("BlurEffect") and obj.Name == "KPC_Blur" then
-                pcall(function() obj:Destroy() end)
-            end
-        end
-    end)
-    pcall(function()
-        RunService:UnbindFromRenderStep(LOGO_RENDER_BINDING)
-    end)
-end
-RegisterInstance(_myDestroyFn)
 
 return KPCUI
