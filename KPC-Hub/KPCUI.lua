@@ -1,12 +1,12 @@
 -- ============================================================
 -- KPCUI — Library giao diện cho Roblox Executor
 -- Tác giả: KPC
--- Version: 1.2.0
+-- Version: 1.3.0
 -- ============================================================
 
 local KPCUI = {}
 KPCUI.__index = KPCUI
-KPCUI.Version = "1.2.0"
+KPCUI.Version = "1.3.0"
 
 -- ============================================================
 -- SERVICES
@@ -243,34 +243,74 @@ local AvatarConfig = {
 }
 
 -- ============================================================
--- SINGLE-INSTANCE GUARD
+-- SINGLE-INSTANCE GUARD (destroy old instances)
 -- ============================================================
-local function RegisterInstance()
+local function DestroyOldInstances()
+    if not getgenv then return 0 end
+    local g = getgenv()
+    local destroyed = 0
+
+    -- Destroy from stored instances (nếu có)
+    if g[GuardConfig.Key] and type(g[GuardConfig.Key]) == "table" then
+        for id, data in pairs(g[GuardConfig.Key]) do
+            if type(data) == "table" and data.destroy then
+                pcall(data.destroy)
+                destroyed = destroyed + 1
+            end
+        end
+    end
+
+    -- Fallback: destroy ScreenGui named "KPCUI" trong CoreGui/hui
+    local function tryDestroyIn(root)
+        if not root then return end
+        for _, obj in ipairs(root:GetChildren()) do
+            if obj.Name == "KPCUI" then
+                pcall(function() obj:Destroy() end)
+                destroyed = destroyed + 1
+            end
+        end
+    end
+
+    tryDestroyIn(CoreGui)
+    if gethui then
+        local ok, hui = pcall(gethui)
+        if ok and hui then tryDestroyIn(hui) end
+    end
+    if lplr and lplr:FindFirstChild("PlayerGui") then
+        tryDestroyIn(lplr.PlayerGui)
+    end
+
+    g[GuardConfig.Key] = {}
+    return destroyed
+end
+
+local function RegisterInstance(destroyFn)
     if not GuardConfig.Enabled then return end
     if not getgenv then return end
     local g = getgenv()
-    if not g[GuardConfig.Key] then
+    if not g[GuardConfig.Key] or type(g[GuardConfig.Key]) ~= "table" then
         g[GuardConfig.Key] = {}
     end
     local instanceId = tostring(tick()) .. "_" .. tostring(math.random(1, 1e9))
     g[GuardConfig.Key][instanceId] = {
         time = os.time(),
         id = instanceId,
+        destroy = destroyFn,
     }
 end
 
-local function ClearOtherInstances(keepId)
-    if not getgenv then return 0 end
+local function UnregisterInstance()
+    if not getgenv then return end
     local g = getgenv()
-    if not g[GuardConfig.Key] then return 0 end
-    local count = 0
-    for id, _ in pairs(g[GuardConfig.Key]) do
-        if id ~= keepId then
-            count = count + 1
+    if not g[GuardConfig.Key] then return end
+    for id, data in pairs(g[GuardConfig.Key]) do
+        if type(data) == "table" and data.id then
+            -- Chỉ xoá instance của chính mình (dùng flag nội bộ)
+            if data.self then
+                g[GuardConfig.Key][id] = nil
+            end
         end
     end
-    g[GuardConfig.Key] = {}
-    return count
 end
 
 -- ============================================================
@@ -455,28 +495,42 @@ local function CreateAvatarFrame()
     AvatarConfig.ImageLabel = img
 end
 
+-- Cache để tránh set Position mỗi frame khi không đổi
+local _lastLogoPos = Vector2.new(-1, -1)
+local _lastLogoSize = -1
+local _lastLogoVisible = nil
+local _lastAvatarPos = Vector2.new(-1, -1)
+local _lastAvatarSize = -1
+local _lastAvatarVisible = nil
+
+local function GetFirstVisibleWindow()
+    for _, w in ipairs(Windows) do
+        if w._main and w._main.Visible then
+            local sz = w._main.AbsoluteSize
+            if sz.X > 50 and sz.Y > 50 then
+                return w
+            end
+        end
+    end
+    return nil
+end
+
 local function UpdateLogoVisibility()
     if not LogoConfig.Frame or not LogoConfig.Frame.Parent then return end
     if not LogoConfig.Enabled then
-        LogoConfig.Frame.Visible = false
-        return
-    end
-    if not Screen or not Screen.Parent then return end
-    local hasVisibleWindow = false
-    for _, w in ipairs(Windows) do
-        if w._main and w._main.Visible and w._main.AbsoluteSize.X > 50 then
-            hasVisibleWindow = true
-            break
+        if _lastLogoVisible ~= false then
+            LogoConfig.Frame.Visible = false
+            _lastLogoVisible = false
         end
-    end
-    if not hasVisibleWindow then
-        LogoConfig.Frame.Visible = false
         return
     end
 
-    local w = Windows[1]
-    if not w or not w._main then
-        LogoConfig.Frame.Visible = false
+    local w = GetFirstVisibleWindow()
+    if not w then
+        if _lastLogoVisible ~= false then
+            LogoConfig.Frame.Visible = false
+            _lastLogoVisible = false
+        end
         return
     end
 
@@ -488,63 +542,78 @@ local function UpdateLogoVisibility()
     local vp = workspace.CurrentCamera.ViewportSize
     lgX = math.clamp(lgX, 0, math.max(0, vp.X - lgSize))
     lgY = math.clamp(lgY, 0, math.max(0, vp.Y - lgSize))
-    LogoConfig.Frame.Position = UDim2.fromOffset(lgX, lgY)
-    LogoConfig.Frame.Size = UDim2.fromOffset(lgSize, lgSize)
-    LogoConfig.Frame.Visible = true
+
+    local newPos = Vector2.new(lgX, lgY)
+    if newPos ~= _lastLogoPos or lgSize ~= _lastLogoSize then
+        _lastLogoPos = newPos
+        _lastLogoSize = lgSize
+        LogoConfig.Frame.Position = UDim2.fromOffset(lgX, lgY)
+        LogoConfig.Frame.Size = UDim2.fromOffset(lgSize, lgSize)
+    end
+    if _lastLogoVisible ~= true then
+        LogoConfig.Frame.Visible = true
+        _lastLogoVisible = true
+    end
 end
 
 local function UpdateAvatarVisibility()
     if not AvatarConfig.Frame or not AvatarConfig.Frame.Parent then return end
     if not AvatarConfig.Enabled then
-        AvatarConfig.Frame.Visible = false
-        return
-    end
-    if not Screen or not Screen.Parent then return end
-    local hasVisibleWindow = false
-    for _, w in ipairs(Windows) do
-        if w._main and w._main.Visible and w._main.AbsoluteSize.X > 50 then
-            hasVisibleWindow = true
-            break
+        if _lastAvatarVisible ~= false then
+            AvatarConfig.Frame.Visible = false
+            _lastAvatarVisible = false
         end
-    end
-    if not hasVisibleWindow then
-        AvatarConfig.Frame.Visible = false
         return
     end
 
-    local w = Windows[1]
-    if not w or not w._main then
-        AvatarConfig.Frame.Visible = false
+    local w = GetFirstVisibleWindow()
+    if not w then
+        if _lastAvatarVisible ~= false then
+            AvatarConfig.Frame.Visible = false
+            _lastAvatarVisible = false
+        end
         return
     end
 
     local pos = w._main.AbsolutePosition
     local size = w._main.AbsoluteSize
-    local avW = AvatarConfig.Size
-    local avH = AvatarConfig.Size
+    local avSize = AvatarConfig.Size
     local avX, avY
     if AvatarConfig.Side == "Right" then
         avX = pos.X + size.X + 10
     else
-        avX = pos.X - avW - 10
+        avX = pos.X - avSize - 10
     end
     avY = pos.Y + AvatarConfig.OffsetY
     local vp = workspace.CurrentCamera.ViewportSize
-    avX = math.clamp(avX, 0, math.max(0, vp.X - avW))
-    avY = math.clamp(avY, 0, math.max(0, vp.Y - avH))
-    AvatarConfig.Frame.Position = UDim2.fromOffset(avX, avY)
-    AvatarConfig.Frame.Visible = true
+    avX = math.clamp(avX, 0, math.max(0, vp.X - avSize))
+    avY = math.clamp(avY, 0, math.max(0, vp.Y - avSize))
+
+    local newPos = Vector2.new(avX, avY)
+    if newPos ~= _lastAvatarPos or avSize ~= _lastAvatarSize then
+        _lastAvatarPos = newPos
+        _lastAvatarSize = avSize
+        AvatarConfig.Frame.Position = UDim2.fromOffset(avX, avY)
+        AvatarConfig.Frame.Size = UDim2.fromOffset(avSize, avSize)
+    end
+    if _lastAvatarVisible ~= true then
+        AvatarConfig.Frame.Visible = true
+        _lastAvatarVisible = true
+    end
 end
 
+-- Bind render step đồng bộ với Camera (chạy trước khi render frame)
+local LOGO_RENDER_BINDING = "KPCUI_LogoAvatarSync"
 local function StartLogoAvatarLoop()
     if KPCUI._logoLoopRunning then return end
     KPCUI._logoLoopRunning = true
-    task.spawn(function()
-        while not Destroyed do
-            task.wait(0.05)
-            pcall(UpdateLogoVisibility)
-            pcall(UpdateAvatarVisibility)
-        end
+    pcall(function()
+        RunService:UnbindFromRenderStep(LOGO_RENDER_BINDING)
+    end)
+    RunService:BindToRenderStep(LOGO_RENDER_BINDING, Enum.RenderPriority.Camera.Value + 10, function()
+        if Destroyed then return end
+        pcall(UpdateLogoVisibility)
+        pcall(UpdateAvatarVisibility)
     end)
 end
 
@@ -2054,7 +2123,7 @@ function KPCUI:GetGuardKey()
 end
 
 function KPCUI:ClearOtherInstances()
-    return ClearOtherInstances()
+    return DestroyOldInstances()
 end
 
 function KPCUI:GetInstanceCount()
@@ -2077,6 +2146,7 @@ function KPCUI:SetLogoEnabled(enabled)
     if LogoConfig.Frame then
         LogoConfig.Frame.Visible = LogoConfig.Enabled
     end
+    _lastLogoVisible = nil
 end
 
 function KPCUI:SetLogoImage(url)
@@ -2125,6 +2195,7 @@ function KPCUI:SetAvatarEnabled(enabled)
     if AvatarConfig.Frame then
         AvatarConfig.Frame.Visible = AvatarConfig.Enabled
     end
+    _lastAvatarVisible = nil
 end
 
 function KPCUI:SetAvatarBorderColor(color)
@@ -2195,6 +2266,11 @@ function KPCUI:Destroy()
     AvatarConfig.Frame = nil
     AvatarConfig.Stroke = nil
     AvatarConfig.ImageLabel = nil
+    pcall(function()
+        RunService:UnbindFromRenderStep(LOGO_RENDER_BINDING)
+    end)
+    KPCUI._logoLoopRunning = false
+    UnregisterInstance()
     ThemeListeners = {}
     FlagStore = {}
 end
@@ -2204,7 +2280,30 @@ end
 -- ============================================================
 InitScreen()
 
--- Đăng ký instance để chống trồng script
-RegisterInstance()
+-- Destroy các instance cũ trước khi đăng ký cái mới
+if GuardConfig.Enabled then
+    DestroyOldInstances()
+end
+
+-- Đăng ký instance mới với destroy callback
+local _myDestroyFn = function()
+    pcall(function()
+        if Screen then Screen:Destroy() end
+    end)
+    pcall(function()
+        if BlurEffect then BlurEffect:Destroy() end
+    end)
+    pcall(function()
+        for _, obj in ipairs(Lighting:GetChildren()) do
+            if obj:IsA("BlurEffect") and obj.Name == "KPC_Blur" then
+                pcall(function() obj:Destroy() end)
+            end
+        end
+    end)
+    pcall(function()
+        RunService:UnbindFromRenderStep(LOGO_RENDER_BINDING)
+    end)
+end
+RegisterInstance(_myDestroyFn)
 
 return KPCUI
