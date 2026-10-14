@@ -52,14 +52,8 @@
     50% { background: var(--accent2); box-shadow: 0 0 12px var(--accent2); }
   }
 
-  .header h1 {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text);
-  }
-
+  .header h1 { font-size: 16px; font-weight: 700; color: var(--text); }
   .header h1 span { color: var(--accent); }
-
   .header .version {
     font-size: 11px;
     color: var(--text-dim);
@@ -67,12 +61,7 @@
     padding: 3px 8px;
     border-radius: 4px;
   }
-
-  .header .actions {
-    display: flex;
-    gap: 8px;
-    margin-left: auto;
-  }
+  .header .actions { display: flex; gap: 8px; margin-left: auto; align-items: center; }
 
   .header button {
     background: var(--panel);
@@ -87,17 +76,8 @@
     font-family: inherit;
   }
 
-  .header button:hover {
-    background: var(--panel2);
-    border-color: var(--accent);
-  }
-
-  .header button.primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: white;
-  }
-
+  .header button:hover { background: var(--panel2); border-color: var(--accent); }
+  .header button.primary { background: var(--accent); border-color: var(--accent); color: white; }
   .header button.primary:hover { background: var(--accent2); }
 
   .header select {
@@ -112,10 +92,7 @@
   }
 
   /* ============ LAYOUT ============ */
-  .container {
-    display: flex;
-    height: calc(100vh - 56px);
-  }
+  .container { display: flex; height: calc(100vh - 56px); }
 
   .preview-pane {
     flex: 1;
@@ -137,7 +114,6 @@
     flex-shrink: 0;
   }
 
-  /* ============ PREVIEW ============ */
   #preview-area {
     position: absolute;
     inset: 0;
@@ -146,6 +122,7 @@
     justify-content: center;
   }
 
+  /* ============ MENU WINDOW ============ */
   .menu-window {
     width: 720px;
     height: 480px;
@@ -154,10 +131,12 @@
     border: 1.5px solid rgba(255, 90, 30, 0.3);
     display: flex;
     flex-direction: column;
-    position: relative;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 90, 30, 0.1);
-    transition: opacity 0.2s;
   }
 
   .menu-window.hidden { display: none !important; }
@@ -181,18 +160,27 @@
     background: var(--accent);
     box-shadow: 0 0 8px var(--accent);
     animation: pulse 2s infinite;
+    flex-shrink: 0;
   }
 
   .menu-window .title-bar .title {
     font-size: 15px;
     font-weight: 700;
     color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
   }
 
   .menu-window .title-bar .subtitle {
     font-size: 11px;
     color: var(--accent);
     margin-left: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
   }
 
   .menu-window .title-bar .stats {
@@ -200,12 +188,14 @@
     font-size: 11px;
     font-family: "Consolas", monospace;
     color: var(--text-dim);
+    white-space: nowrap;
   }
 
   .menu-window .title-bar .win-btns {
     display: flex;
     gap: 6px;
     margin-left: 12px;
+    flex-shrink: 0;
   }
 
   .menu-window .title-bar .win-btn {
@@ -223,20 +213,10 @@
     font-weight: 700;
   }
 
-  .menu-window .title-bar .win-btn:hover {
-    background: var(--danger);
-    color: white;
-  }
+  .menu-window .title-bar .win-btn:hover { background: var(--danger); color: white; }
+  .menu-window .title-bar .win-btn.minimize:hover { background: var(--accent); }
 
-  .menu-window .title-bar .win-btn.minimize:hover {
-    background: var(--accent);
-  }
-
-  .menu-window .body {
-    flex: 1;
-    display: flex;
-    min-height: 0;
-  }
+  .menu-window .body { flex: 1; display: flex; min-height: 0; }
 
   .menu-window .sidebar {
     width: 160px;
@@ -267,7 +247,6 @@
     font-family: inherit;
     flex-shrink: 0;
   }
-
   .menu-window .search::placeholder { color: var(--text-dim); }
 
   .menu-window .tab-btn {
@@ -285,20 +264,9 @@
     flex-shrink: 0;
     user-select: none;
   }
-
   .menu-window .tab-btn:hover { background: var(--panel); }
-
-  .menu-window .tab-btn.active {
-    background: var(--panel);
-    color: var(--text);
-  }
-
-  .menu-window .tab-btn .icon {
-    font-size: 16px;
-    width: 20px;
-    text-align: center;
-    flex-shrink: 0;
-  }
+  .menu-window .tab-btn.active { background: var(--panel); color: var(--text); }
+  .menu-window .tab-btn .icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
 
   .menu-window .content {
     flex: 1;
@@ -314,7 +282,7 @@
   .menu-window .content::-webkit-scrollbar-track { background: transparent; }
   .menu-window .content::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; opacity: 0.6; }
 
-  /* Elements */
+  /* ============ ELEMENTS ============ */
   .el-section {
     font-size: 12px;
     font-weight: 700;
@@ -323,8 +291,8 @@
     border-bottom: 1px solid var(--stroke);
     position: relative;
     flex-shrink: 0;
+    margin-top: 4px;
   }
-
   .el-section::after {
     content: "";
     position: absolute;
@@ -354,11 +322,8 @@
     font-family: inherit;
     cursor: pointer;
     transition: all 0.15s;
-    position: relative;
-    overflow: hidden;
     flex-shrink: 0;
   }
-
   .el-button:hover { background: var(--panel2); }
   .el-button:active { transform: scale(0.98); }
 
@@ -375,9 +340,7 @@
     flex-shrink: 0;
     gap: 8px;
   }
-
   .el-toggle .label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
   .el-toggle .track {
     width: 44px;
     height: 22px;
@@ -388,9 +351,7 @@
     transition: background 0.2s;
     flex-shrink: 0;
   }
-
   .el-toggle .track.on { background: var(--accent); }
-
   .el-toggle .knob {
     width: 16px;
     height: 16px;
@@ -401,7 +362,6 @@
     left: 3px;
     transition: left 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-
   .el-toggle .track.on .knob { left: 25px; }
 
   .el-slider {
@@ -413,7 +373,6 @@
     position: relative;
     flex-shrink: 0;
   }
-
   .el-slider .name {
     font-size: 13px;
     color: var(--text);
@@ -422,7 +381,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-
   .el-slider .val {
     position: absolute;
     top: 6px;
@@ -431,7 +389,6 @@
     font-weight: 700;
     color: var(--accent);
   }
-
   .el-slider .track {
     position: absolute;
     left: 12px;
@@ -442,13 +399,11 @@
     border-radius: 999px;
     cursor: pointer;
   }
-
   .el-slider .fill {
     height: 100%;
     background: var(--accent);
     border-radius: 999px;
   }
-
   .el-slider .knob {
     position: absolute;
     top: 50%;
@@ -469,13 +424,7 @@
     padding: 6px 12px;
     flex-shrink: 0;
   }
-
-  .el-input .name {
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-bottom: 2px;
-  }
-
+  .el-input .name { font-size: 11px; color: var(--text-dim); margin-bottom: 2px; }
   .el-input input {
     width: 100%;
     height: 26px;
@@ -489,12 +438,7 @@
     font-family: "Consolas", monospace;
     transition: all 0.15s;
   }
-
-  .el-input input:focus {
-    background: var(--panel);
-    border-color: var(--accent);
-  }
-
+  .el-input input:focus { background: var(--panel); border-color: var(--accent); }
   .el-input input::placeholder { color: var(--text-dim); }
 
   .el-dropdown {
@@ -512,10 +456,8 @@
     flex-shrink: 0;
     user-select: none;
   }
-
-  .el-dropdown .label { color: var(--text); }
-  .el-dropdown .value { color: var(--accent); font-size: 12px; font-weight: 500; }
-
+  .el-dropdown .label { color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .el-dropdown .value { color: var(--accent); font-size: 12px; font-weight: 500; flex-shrink: 0; }
   .el-dropdown .options {
     position: absolute;
     top: 100%;
@@ -533,12 +475,9 @@
     max-height: 200px;
     overflow-y: auto;
   }
-
   .el-dropdown.open .options { display: flex; }
-
   .el-dropdown .options::-webkit-scrollbar { width: 4px; }
   .el-dropdown .options::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
-
   .el-dropdown .option {
     padding: 6px 8px;
     font-size: 12px;
@@ -547,7 +486,6 @@
     transition: background 0.15s;
     cursor: pointer;
   }
-
   .el-dropdown .option:hover { background: var(--panel); }
   .el-dropdown .option.selected { background: var(--accent); color: white; }
 
@@ -563,7 +501,6 @@
     font-size: 13px;
     flex-shrink: 0;
   }
-
   .el-colorpicker .swatch {
     width: 34px;
     height: 22px;
@@ -573,7 +510,6 @@
     position: relative;
     overflow: hidden;
   }
-
   .el-colorpicker .swatch input {
     position: absolute;
     inset: 0;
@@ -595,7 +531,6 @@
     font-size: 13px;
     flex-shrink: 0;
   }
-
   .el-keybind .key-btn {
     width: 90px;
     height: 24px;
@@ -612,15 +547,10 @@
     border: none;
     font-family: inherit;
   }
-
-  .el-keybind .key-btn.listening {
-    background: var(--warning);
-    color: #000;
-  }
-
+  .el-keybind .key-btn.listening { background: var(--warning); color: #000; }
   .el-keybind .key-btn:hover { background: var(--panel); }
 
-  /* Notifications */
+  /* ============ NOTIFICATIONS ============ */
   .notifications {
     position: fixed;
     top: 72px;
@@ -632,7 +562,6 @@
     z-index: 9999;
     pointer-events: none;
   }
-
   .notif {
     background: var(--panel);
     border: 1.5px solid var(--accent);
@@ -645,19 +574,9 @@
     animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     pointer-events: all;
   }
-
-  @keyframes slideIn {
-    to { transform: translateX(0); opacity: 1; }
-  }
-
-  .notif.removing {
-    animation: slideOut 0.35s ease forwards;
-  }
-
-  @keyframes slideOut {
-    to { transform: translateX(340px); opacity: 0; }
-  }
-
+  @keyframes slideIn { to { transform: translateX(0); opacity: 1; } }
+  .notif.removing { animation: slideOut 0.35s ease forwards; }
+  @keyframes slideOut { to { transform: translateX(340px); opacity: 0; } }
   .notif::before {
     content: "";
     position: absolute;
@@ -667,20 +586,8 @@
     width: 3px;
     background: var(--accent);
   }
-
-  .notif .title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--accent);
-    margin-bottom: 4px;
-  }
-
-  .notif .content {
-    font-size: 12px;
-    color: var(--text);
-    line-height: 1.4;
-  }
-
+  .notif .title { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .notif .content { font-size: 12px; color: var(--text); line-height: 1.4; }
   .notif .progress {
     position: absolute;
     bottom: 0;
@@ -689,27 +596,31 @@
     background: var(--accent);
     width: 100%;
   }
+  @keyframes progress { from { width: 100%; } to { width: 0%; } }
 
-  @keyframes progress {
-    from { width: 100%; }
-    to { width: 0%; }
-  }
-
-  /* Logo & Avatar */
+  /* ============ LOGO & AVATAR ============ */
   .kpc-logo {
     position: fixed;
     pointer-events: none;
-    z-index: 9998;
+    z-index: 50;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: opacity 0.2s;
+  }
+  .kpc-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 20px var(--accent));
+  }
+  .kpc-logo .placeholder {
     font-size: 48px;
     font-weight: 900;
     color: var(--accent);
     text-shadow: 0 0 20px var(--accent);
-    transition: opacity 0.2s;
+    letter-spacing: -2px;
   }
-
   .kpc-logo.hidden { opacity: 0; pointer-events: none; }
 
   .kpc-avatar {
@@ -721,11 +632,12 @@
     justify-content: center;
     font-size: 40px;
     border: 3px solid var(--accent);
-    z-index: 9998;
+    z-index: 50;
     box-shadow: 0 0 20px rgba(255, 90, 30, 0.3);
-    transition: opacity 0.2s;
+    transition: opacity 0.2s, border-color 0.3s;
+    overflow: hidden;
   }
-
+  .kpc-avatar img { width: 100%; height: 100%; object-fit: cover; }
   .kpc-avatar.hidden { opacity: 0; pointer-events: none; }
 
   /* ============ EDITOR ============ */
@@ -739,7 +651,6 @@
     gap: 8px;
     flex-shrink: 0;
   }
-
   .editor-header .label {
     font-size: 12px;
     font-weight: 700;
@@ -747,7 +658,6 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-
   #code-editor {
     flex: 1;
     width: 100%;
@@ -764,12 +674,10 @@
     white-space: pre;
     overflow: auto;
   }
-
   #code-editor::-webkit-scrollbar { width: 10px; height: 10px; }
   #code-editor::-webkit-scrollbar-track { background: #0a0505; }
   #code-editor::-webkit-scrollbar-thumb { background: #2a1a15; border-radius: 5px; }
   #code-editor::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
   .editor-footer {
     height: 36px;
     background: var(--bg2);
@@ -782,31 +690,19 @@
     color: var(--text-dim);
     flex-shrink: 0;
   }
-
-  .editor-footer .status {
-    flex: 1;
-    font-family: "Consolas", monospace;
-  }
-
+  .editor-footer .status { flex: 1; font-family: "Consolas", monospace; }
   .editor-footer .status.error { color: var(--danger); }
   .editor-footer .status.success { color: var(--success); }
 
-  /* ============ RESPONSIVE ============ */
   @media (max-width: 1100px) {
     .container { flex-direction: column; }
     .editor-pane { width: 100%; height: 45vh; border-left: none; border-top: 1px solid var(--stroke); }
     .preview-pane { height: 55vh; }
-    .menu-window { transform: scale(0.75); }
-  }
-
-  @media (max-width: 700px) {
-    .menu-window { transform: scale(0.5); }
   }
 </style>
 </head>
 <body>
 
-<!-- ============ HEADER ============ -->
 <div class="header">
   <div class="logo-dot"></div>
   <h1>KPC<span>UI</span> Playground</h1>
@@ -825,10 +721,7 @@
   </div>
 </div>
 
-<!-- ============ CONTAINER ============ -->
 <div class="container">
-
-  <!-- ============ PREVIEW ============ -->
   <div class="preview-pane" id="preview-pane">
     <div id="preview-area">
       <div class="menu-window hidden" id="menu-window">
@@ -852,30 +745,17 @@
     </div>
   </div>
 
-  <!-- ============ EDITOR ============ -->
   <div class="editor-pane">
     <div class="editor-header">
       <div class="label">Lua Code</div>
     </div>
-    <textarea id="code-editor" spellcheck="false" placeholder="-- Viết code KPCUI ở đây...
--- Ví dụ:
-Window('My Script')
-Tab('Main', '🏠')
-Section('General')
-Button('Click Me', function()
-    Notify('Hello', 'Button clicked!')
-end)
-Toggle('Enable ESP', false, function(v)
-    Notify('ESP', v and 'ON' or 'OFF')
-end)"></textarea>
+    <textarea id="code-editor" spellcheck="false"></textarea>
     <div class="editor-footer">
       <div class="status" id="status">Sẵn sàng</div>
     </div>
   </div>
-
 </div>
 
-<!-- ============ NOTIFICATIONS ============ -->
 <div class="notifications" id="notifications"></div>
 
 <script>
@@ -885,74 +765,22 @@ end)"></textarea>
 // THEMES
 // ============================================================
 const THEMES = {
-  BloodRed: {
-    bg: "#0e0806", bg2: "#160d0a",
-    panel: "#1e110d", panel2: "#281711",
-    accent: "#ff5a1e", accent2: "#ff9155",
-    text: "#f2eeea", textDim: "#a5948c",
-    stroke: "#552d1e",
-    success: "#46dc6e", danger: "#ff4646", warning: "#ffc846"
-  },
-  DarkBlue: {
-    bg: "#060912", bg2: "#0a101e",
-    panel: "#10182c", panel2: "#16223a",
-    accent: "#4696ff", accent2: "#82beff",
-    text: "#e8f0ff", textDim: "#8296b4",
-    stroke: "#28416e",
-    success: "#46dc6e", danger: "#ff4646", warning: "#ffc846"
-  },
-  Amethyst: {
-    bg: "#0e0614", bg2: "#160c22",
-    panel: "#201130", panel2: "#2c1840",
-    accent: "#b95aff", accent2: "#d78cff",
-    text: "#f2e8ff", textDim: "#9b87b9",
-    stroke: "#4b2d6e",
-    success: "#46dc6e", danger: "#ff4646", warning: "#ffc846"
-  },
-  Green: {
-    bg: "#060e0a", bg2: "#0a1610",
-    panel: "#0f2018", panel2: "#162d21",
-    accent: "#32dc82", accent2: "#64f0aa",
-    text: "#e4f6ec", textDim: "#7da591",
-    stroke: "#23553c",
-    success: "#46dc6e", danger: "#ff4646", warning: "#ffc846"
-  },
-  Ocean: {
-    bg: "#060c12", bg2: "#0a141e",
-    panel: "#101e2c", panel2: "#182a3c",
-    accent: "#28b4dc", accent2: "#5ad2f5",
-    text: "#e4f4fa", textDim: "#7da0b4",
-    stroke: "#285069",
-    success: "#46dc6e", danger: "#ff4646", warning: "#ffc846"
-  },
-  Serenity: {
-    bg: "#0c0c12", bg2: "#14141e",
-    panel: "#1e1e2a", panel2: "#2a2a38",
-    accent: "#b4b4dc", accent2: "#d2d2f0",
-    text: "#eeeef5", textDim: "#9696aa",
-    stroke: "#46465f",
-    success: "#46dc6e", danger: "#ff4646", warning: "#ffc846"
-  },
-  Light: {
-    bg: "#f0f0f5", bg2: "#e6e6ee",
-    panel: "#ffffff", panel2: "#f5f5fa",
-    accent: "#5a78e6", accent2: "#82a0fa",
-    text: "#1e1e28", textDim: "#6e6e82",
-    stroke: "#c8c8d7",
-    success: "#3cbe64", danger: "#e63c3c", warning: "#e6b432"
-  }
+  BloodRed: { bg:"#0e0806", bg2:"#160d0a", panel:"#1e110d", panel2:"#281711", accent:"#ff5a1e", accent2:"#ff9155", text:"#f2eeea", textDim:"#a5948c", stroke:"#552d1e", success:"#46dc6e", danger:"#ff4646", warning:"#ffc846" },
+  DarkBlue: { bg:"#060912", bg2:"#0a101e", panel:"#10182c", panel2:"#16223a", accent:"#4696ff", accent2:"#82beff", text:"#e8f0ff", textDim:"#8296b4", stroke:"#28416e", success:"#46dc6e", danger:"#ff4646", warning:"#ffc846" },
+  Amethyst: { bg:"#0e0614", bg2:"#160c22", panel:"#201130", panel2:"#2c1840", accent:"#b95aff", accent2:"#d78cff", text:"#f2e8ff", textDim:"#9b87b9", stroke:"#4b2d6e", success:"#46dc6e", danger:"#ff4646", warning:"#ffc846" },
+  Green: { bg:"#060e0a", bg2:"#0a1610", panel:"#0f2018", panel2:"#162d21", accent:"#32dc82", accent2:"#64f0aa", text:"#e4f6ec", textDim:"#7da591", stroke:"#23553c", success:"#46dc6e", danger:"#ff4646", warning:"#ffc846" },
+  Ocean: { bg:"#060c12", bg2:"#0a141e", panel:"#101e2c", panel2:"#182a3c", accent:"#28b4dc", accent2:"#5ad2f5", text:"#e4f4fa", textDim:"#7da0b4", stroke:"#285069", success:"#46dc6e", danger:"#ff4646", warning:"#ffc846" },
+  Serenity: { bg:"#0c0c12", bg2:"#14141e", panel:"#1e1e2a", panel2:"#2a2a38", accent:"#b4b4dc", accent2:"#d2d2f0", text:"#eeeef5", textDim:"#9696aa", stroke:"#46465f", success:"#46dc6e", danger:"#ff4646", warning:"#ffc846" },
+  Light: { bg:"#f0f0f5", bg2:"#e6e6ee", panel:"#ffffff", panel2:"#f5f5fa", accent:"#5a78e6", accent2:"#82a0fa", text:"#1e1e28", textDim:"#6e6e82", stroke:"#c8c8d7", success:"#3cbe64", danger:"#e63c3c", warning:"#e6b432" }
 };
 
 let currentTheme = "BloodRed";
-
 function applyTheme(name) {
   if (!THEMES[name]) return;
   currentTheme = name;
   const t = THEMES[name];
   const root = document.documentElement;
-  for (const k in t) {
-    root.style.setProperty("--" + k, t[k]);
-  }
+  for (const k in t) root.style.setProperty("--" + k, t[k]);
 }
 
 // ============================================================
@@ -962,11 +790,9 @@ const state = {
   window: null,
   tabs: [],
   activeTab: null,
-  elements: [],
-  logo: { enabled: true, el: null },
+  logo: { enabled: true, el: null, image: null },
   avatar: { enabled: true, el: null, side: "Left" },
-  flags: {},
-  menuPos: { x: 0, y: 0 }
+  flags: {}
 };
 
 // ============================================================
@@ -995,60 +821,55 @@ function el(tag, attrs, children) {
   return e;
 }
 
-function escapeHtml(s) {
-  if (typeof s !== "string") s = String(s);
-  return s.replace(/[&<>"']/g, c => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  })[c]);
-}
-
 // ============================================================
-// MENU POSITION TRACKING (Logo + Avatar stick to menu)
+// LOGO + AVATAR TRACKING
 // ============================================================
 function trackMenuPosition() {
   const win = document.getElementById("menu-window");
+  const logo = state.logo.el;
+  const avatar = state.avatar.el;
+
   if (!win || win.classList.contains("hidden")) {
-    if (state.logo.el) state.logo.el.classList.add("hidden");
-    if (state.avatar.el) state.avatar.el.classList.add("hidden");
+    if (logo) logo.classList.add("hidden");
+    if (avatar) avatar.classList.add("hidden");
     requestAnimationFrame(trackMenuPosition);
     return;
   }
+
   const rect = win.getBoundingClientRect();
   if (rect.width < 50) {
-    if (state.logo.el) state.logo.el.classList.add("hidden");
-    if (state.avatar.el) state.avatar.el.classList.add("hidden");
+    if (logo) logo.classList.add("hidden");
+    if (avatar) avatar.classList.add("hidden");
     requestAnimationFrame(trackMenuPosition);
     return;
   }
 
-  // Logo (center above menu)
-  if (state.logo.el && state.logo.enabled) {
+  if (logo && state.logo.enabled) {
     const lgSize = 120;
     const lgX = rect.left + (rect.width - lgSize) / 2;
-    const lgY = rect.top - lgSize + 30;
-    state.logo.el.style.left = lgX + "px";
-    state.logo.el.style.top = lgY + "px";
-    state.logo.el.style.width = lgSize + "px";
-    state.logo.el.style.height = lgSize + "px";
-    state.logo.el.classList.remove("hidden");
-  } else if (state.logo.el) {
-    state.logo.el.classList.add("hidden");
+    const lgY = rect.top - 20;
+    logo.style.left = lgX + "px";
+    logo.style.top = lgY + "px";
+    logo.style.width = lgSize + "px";
+    logo.style.height = lgSize + "px";
+    logo.classList.remove("hidden");
+  } else if (logo) {
+    logo.classList.add("hidden");
   }
 
-  // Avatar (side of menu)
-  if (state.avatar.el && state.avatar.enabled) {
+  if (avatar && state.avatar.enabled) {
     const avSize = 110;
     let avX;
     if (state.avatar.side === "Right") avX = rect.right + 10;
     else avX = rect.left - avSize - 10;
     const avY = rect.top + 70;
-    state.avatar.el.style.left = avX + "px";
-    state.avatar.el.style.top = avY + "px";
-    state.avatar.el.style.width = avSize + "px";
-    state.avatar.el.style.height = avSize + "px";
-    state.avatar.el.classList.remove("hidden");
-  } else if (state.avatar.el) {
-    state.avatar.el.classList.add("hidden");
+    avatar.style.left = avX + "px";
+    avatar.style.top = avY + "px";
+    avatar.style.width = avSize + "px";
+    avatar.style.height = avSize + "px";
+    avatar.classList.remove("hidden");
+  } else if (avatar) {
+    avatar.classList.add("hidden");
   }
 
   requestAnimationFrame(trackMenuPosition);
@@ -1061,7 +882,6 @@ function Notify(title, content, duration) {
   title = title || "Thông báo";
   content = content || "";
   duration = duration || 3;
-
   const holder = document.getElementById("notifications");
   const node = el("div", { class: "notif" });
   node.appendChild(el("div", { class: "title", text: title }));
@@ -1070,7 +890,6 @@ function Notify(title, content, duration) {
   prog.style.animation = `progress ${duration}s linear forwards`;
   node.appendChild(prog);
   holder.appendChild(node);
-
   setTimeout(() => {
     node.classList.add("removing");
     setTimeout(() => node.remove(), 400);
@@ -1083,6 +902,9 @@ function Notify(title, content, duration) {
 function Window(name) {
   const win = document.getElementById("menu-window");
   win.classList.remove("hidden");
+  win.style.left = "50%";
+  win.style.top = "50%";
+  win.style.transform = "translate(-50%, -50%)";
   document.getElementById("window-title").textContent = name || "KPCUI";
   document.getElementById("window-subtitle").textContent = "";
   document.getElementById("window-stats").textContent = "FPS: 60 | Ping: 0 ms";
@@ -1090,26 +912,35 @@ function Window(name) {
   state.window = win;
   state.tabs = [];
   state.activeTab = null;
-  state.elements = [];
 
-  // Reset sidebar (keep search box)
   const sidebar = document.getElementById("sidebar");
   const search = document.getElementById("tab-search");
   sidebar.innerHTML = "";
   sidebar.appendChild(search);
   search.value = "";
 
-  // Reset content
   document.getElementById("content").innerHTML = "";
 
-  // Create logo + avatar
+  // Create logo if not exists
   if (!state.logo.el) {
-    state.logo.el = el("div", { class: "kpc-logo", text: "KPC" });
-    document.body.appendChild(state.logo.el);
+    const logo = el("div", { class: "kpc-logo" });
+    if (state.logo.image) {
+      logo.appendChild(el("img", { src: state.logo.image }));
+    } else {
+      logo.appendChild(el("div", { class: "placeholder", text: "KPC" }));
+    }
+    document.body.appendChild(logo);
+    state.logo.el = logo;
   }
+
+  // Create avatar
   if (!state.avatar.el) {
-    state.avatar.el = el("div", { class: "kpc-avatar", text: "👤" });
-    document.body.appendChild(state.avatar.el);
+    const avatar = el("div", { class: "kpc-avatar" });
+    // Dùng dicebear làm avatar mặc định
+    const avatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=KPC";
+    avatar.appendChild(el("img", { src: avatarUrl, alt: "avatar" }));
+    document.body.appendChild(avatar);
+    state.avatar.el = avatar;
   }
 
   // Update stats
@@ -1120,7 +951,7 @@ function Window(name) {
     document.getElementById("window-stats").textContent = `FPS: ${fps} | Ping: ${ping} ms`;
   }, 1000);
 
-  // Search handler
+  // Search
   search.oninput = () => {
     const q = search.value.toLowerCase();
     document.querySelectorAll(".tab-btn").forEach(btn => {
@@ -1129,18 +960,13 @@ function Window(name) {
     });
   };
 
-  // Window buttons
-  document.getElementById("btn-close").onclick = () => {
-    win.classList.add("hidden");
-  };
+  document.getElementById("btn-close").onclick = () => win.classList.add("hidden");
   document.getElementById("btn-minimize").onclick = () => {
     win.classList.add("hidden");
     setTimeout(() => win.classList.remove("hidden"), 300);
   };
 
-  // Drag
   setupDrag();
-
   return state;
 }
 
@@ -1156,12 +982,9 @@ function setupDrag() {
     if (e.target.closest(".win-btn")) return;
     dragging = true;
     const rect = win.getBoundingClientRect();
-    // Switch to absolute positioning
-    win.style.position = "fixed";
+    win.style.transform = "none";
     win.style.left = rect.left + "px";
     win.style.top = rect.top + "px";
-    win.style.margin = "0";
-    win.style.transform = "none";
     startX = e.clientX;
     startY = e.clientY;
     origX = rect.left;
@@ -1177,9 +1000,7 @@ function setupDrag() {
     win.style.top = (origY + dy) + "px";
   });
 
-  document.addEventListener("mouseup", () => {
-    dragging = false;
-  });
+  document.addEventListener("mouseup", () => { dragging = false; });
 }
 
 // ============================================================
@@ -1193,40 +1014,43 @@ function Tab(name, icon) {
   btn.appendChild(el("div", { text: name }));
 
   const content = document.getElementById("content");
-  content.innerHTML = "";
 
-  // If first tab, activate
-  const isFirst = state.tabs.length === 0;
-  if (isFirst) btn.classList.add("active");
+  const tabData = { name, icon, btn, elements: [] };
+  state.tabs.push(tabData);
 
   btn.onclick = () => {
     document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
-    state.activeTab = name;
-    // Re-render this tab's elements
-    renderTabElements(name);
+    state.activeTab = tabData;
+    content.innerHTML = "";
+    for (const fn of tabData.elements) fn();
   };
 
   sidebar.appendChild(btn);
 
-  const tabData = { name, icon, btn, elements: [] };
-  state.tabs.push(tabData);
-  state.activeTab = name;
-
-  // Set as current tab
-  state._currentTab = tabData;
+  // Auto-activate first tab
+  if (state.tabs.length === 1) {
+    btn.classList.add("active");
+    state.activeTab = tabData;
+    content.innerHTML = "";
+  }
 
   return tabData;
 }
 
-function renderTabElements(tabName) {
+// Helper: append to current tab
+function appendElement(fn) {
   const content = document.getElementById("content");
-  content.innerHTML = "";
-  const tabData = state.tabs.find(t => t.name === tabName);
-  if (!tabData) return;
-  state._currentTab = tabData;
-  for (const fn of tabData.elements) {
-    fn();
+  if (!state.activeTab) {
+    // Just append directly if no active tab
+    fn(content);
+    return;
+  }
+  state.activeTab.elements.push(() => fn(content));
+  // Only render if this is the active tab
+  const active = state.tabs.find(t => t.name === state.activeTab.name);
+  if (active === state.activeTab) {
+    fn(content);
   }
 }
 
@@ -1234,336 +1058,639 @@ function renderTabElements(tabName) {
 // ELEMENTS
 // ============================================================
 function Section(text) {
-  const content = document.getElementById("content");
-  const node = el("div", { class: "el-section", text: text });
-  content.appendChild(node);
-  if (state._currentTab) state._currentTab.elements.push(() => content.appendChild(node));
+  appendElement((content) => {
+    content.appendChild(el("div", { class: "el-section", text: text }));
+  });
 }
 
 function Label(text) {
-  const content = document.getElementById("content");
-  const node = el("div", { class: "el-label", text: text });
-  content.appendChild(node);
-  if (state._currentTab) state._currentTab.elements.push(() => content.appendChild(node));
+  appendElement((content) => {
+    content.appendChild(el("div", { class: "el-label", text: text }));
+  });
 }
 
 function Button(name, callback) {
-  const content = document.getElementById("content");
-  const node = el("button", { class: "el-button", text: name });
-  node.onclick = () => {
-    try { if (callback) callback(); }
-    catch (err) { console.error(err); setStatus("Lỗi callback: " + err.message, "error"); }
-  };
-  content.appendChild(node);
-  if (state._currentTab) state._currentTab.elements.push(() => content.appendChild(node));
+  appendElement((content) => {
+    const node = el("button", { class: "el-button", text: name });
+    node.onclick = () => {
+      try { if (callback) callback(); }
+      catch (err) { console.error(err); setStatus("Lỗi: " + err.message, "error"); }
+    };
+    content.appendChild(node);
+  });
 }
 
 function Toggle(name, defaultValue, callback) {
-  const content = document.getElementById("content");
-  let value = !!defaultValue;
-
-  const node = el("div", { class: "el-toggle" });
-  node.appendChild(el("div", { class: "label", text: name }));
-
-  const track = el("div", { class: "track" + (value ? " on" : "") });
-  const knob = el("div", { class: "knob" });
-  track.appendChild(knob);
-  node.appendChild(track);
-
-  track.onclick = () => {
-    value = !value;
-    track.classList.toggle("on", value);
-    try { if (callback) callback(value); }
-    catch (err) { console.error(err); setStatus("Lỗi callback: " + err.message, "error"); }
-  };
-
-  content.appendChild(node);
-  if (state._currentTab) state._currentTab.elements.push(() => content.appendChild(node));
+  appendElement((content) => {
+    let value = !!defaultValue;
+    const node = el("div", { class: "el-toggle" });
+    node.appendChild(el("div", { class: "label", text: name }));
+    const track = el("div", { class: "track" + (value ? " on" : "") });
+    const knob = el("div", { class: "knob" });
+    track.appendChild(knob);
+    node.appendChild(track);
+    track.onclick = () => {
+      value = !value;
+      track.classList.toggle("on", value);
+      try { if (callback) callback(value); }
+      catch (err) { console.error(err); setStatus("Lỗi: " + err.message, "error"); }
+    };
+    content.appendChild(node);
+  });
 }
 
 function Slider(name, min, max, defaultValue, suffix, callback) {
-  const content = document.getElementById("content");
-  let value = defaultValue != null ? defaultValue : min;
-  suffix = suffix || "";
+  appendElement((content) => {
+    let value = defaultValue != null ? defaultValue : min;
+    suffix = suffix || "";
+    const node = el("div", { class: "el-slider" });
+    const valEl = el("div", { class: "val", text: Math.round(value) + suffix });
+    const track = el("div", { class: "track" });
+    const fill = el("div", { class: "fill" });
+    const knob = el("div", { class: "knob" });
+    const initRel = Math.max(0, Math.min(1, (value - min) / (max - min)));
+    fill.style.width = (initRel * 100) + "%";
+    knob.style.left = (initRel * 100) + "%";
+    track.appendChild(fill);
+    track.appendChild(knob);
+    node.appendChild(el("div", { class: "name", text: name }));
+    node.appendChild(valEl);
+    node.appendChild(track);
 
-  const node = el("div", { class: "el-slider" });
-  const nameEl = el("div", { class: "name", text: name });
-  const valEl = el("div", { class: "val", text: value + suffix });
-  const track = el("div", { class: "track" });
-  const fill = el("div", { class: "fill" });
-  const knob = el("div", { class: "knob" });
-
-  const initRel = Math.max(0, Math.min(1, (value - min) / (max - min)));
-  fill.style.width = (initRel * 100) + "%";
-  knob.style.left = (initRel * 100) + "%";
-  track.appendChild(fill);
-  track.appendChild(knob);
-  node.appendChild(nameEl);
-  node.appendChild(valEl);
-  node.appendChild(track);
-
-  let dragging = false;
-  const updateFromX = (clientX) => {
-    const rect = track.getBoundingClientRect();
-    let rel = (clientX - rect.left) / rect.width;
-    rel = Math.max(0, Math.min(1, rel));
-    value = min + (max - min) * rel;
-    fill.style.width = (rel * 100) + "%";
-    knob.style.left = (rel * 100) + "%";
-    valEl.textContent = Math.round(value * 100) / 100 + suffix;
-    try { if (callback) callback(value); }
-    catch (err) { console.error(err); }
-  };
-
-  track.onmousedown = (e) => { dragging = true; updateFromX(e.clientX); e.preventDefault(); };
-  document.addEventListener("mousemove", (e) => { if (dragging) updateFromX(e.clientX); });
-  document.addEventListener("mouseup", () => { dragging = false; });
-
-  content.appendChild(node);
-  if (state._currentTab) state._currentTab.elements.push(() => content.appendChild(node));
+    let dragging = false;
+    const updateFromX = (clientX) => {
+      const rect = track.getBoundingClientRect();
+      let rel = (clientX - rect.left) / rect.width;
+      rel = Math.max(0, Math.min(1, rel));
+      value = min + (max - min) * rel;
+      fill.style.width = (rel * 100) + "%";
+      knob.style.left = (rel * 100) + "%";
+      valEl.textContent = Math.round(value * 100) / 100 + suffix;
+      try { if (callback) callback(value); } catch (e) {}
+    };
+    track.onmousedown = (e) => { dragging = true; updateFromX(e.clientX); e.preventDefault(); };
+    document.addEventListener("mousemove", (e) => { if (dragging) updateFromX(e.clientX); });
+    document.addEventListener("mouseup", () => { dragging = false; });
+    content.appendChild(node);
+  });
 }
 
 function Input(name, placeholder, callback) {
-  const content = document.getElementById("content");
-  const node = el("div", { class: "el-input" });
-  node.appendChild(el("div", { class: "name", text: name }));
-  const inp = el("input", { type: "text", placeholder: placeholder || "" });
-  inp.oninput = () => {
-    try { if (callback) callback(inp.value); }
-    catch (err) { console.error(err); }
-  };
-  node.appendChild(inp);
-  content.appendChild(node);
-  if (state._currentTab) state._currentTab.elements.push(() => content.appendChild(node));
+  appendElement((content) => {
+    const node = el("div", { class: "el-input" });
+    node.appendChild(el("div", { class: "name", text: name }));
+    const inp = el("input", { type: "text", placeholder: placeholder || "" });
+    inp.oninput = () => { try { if (callback) callback(inp.value); } catch (e) {} };
+    node.appendChild(inp);
+    content.appendChild(node);
+  });
 }
 
 function Dropdown(name, options, callback) {
-  const content = document.getElementById("content");
-  options = options || [];
-  let current = options[0] || "";
-
-  const node = el("div", { class: "el-dropdown" });
-  const label = el("div", { class: "label", text: name });
-  const valSpan = el("div", { class: "value", text: current + " ▾" });
-  node.appendChild(label);
-  node.appendChild(valSpan);
-
-  const optionsEl = el("div", { class: "options" });
-  options.forEach(opt => {
-    const o = el("div", { class: "option" + (opt === current ? " selected" : ""), text: opt });
-    o.onclick = (e) => {
-      e.stopPropagation();
-      current = opt;
-      valSpan.textContent = opt + " ▾";
-      optionsEl.querySelectorAll(".option").forEach(x => x.classList.remove("selected"));
-      o.classList.add("selected");
-      node.classList.remove("open");
-      try { if (callback) callback(opt); }
-      catch (err) { console.error(err); }
+  appendElement((content) => {
+    options = options || [];
+    let current = options[0] || "";
+    const node = el("div", { class: "el-dropdown" });
+    const label = el("div", { class: "label", text: name });
+    const valSpan = el("div", { class: "value", text: current + " ▾" });
+    node.appendChild(label);
+    node.appendChild(valSpan);
+    const optionsEl = el("div", { class: "options" });
+    options.forEach(opt => {
+      const o = el("div", { class: "option" + (opt === current ? " selected" : ""), text: opt });
+      o.onclick = (e) => {
+        e.stopPropagation();
+        current = opt;
+        valSpan.textContent = opt + " ▾";
+        optionsEl.querySelectorAll(".option").forEach(x => x.classList.remove("selected"));
+        o.classList.add("selected");
+        node.classList.remove("open");
+        try { if (callback) callback(opt); } catch (err) {}
+      };
+      optionsEl.appendChild(o);
+    });
+    node.appendChild(optionsEl);
+    node.onclick = (e) => {
+      if (e.target.closest(".options")) return;
+      document.querySelectorAll(".el-dropdown.open").forEach(d => { if (d !== node) d.classList.remove("open"); });
+      node.classList.toggle("open");
     };
-    optionsEl.appendChild(o);
+    content.appendChild(node);
   });
-  node.appendChild(optionsEl);
-
-  node.onclick = (e) => {
-    if (e.target.closest(".options")) return;
-    node.classList.toggle("open");
-  };
-
-  document.addEventListener("click", (e) => {
-    if (!node.contains(e.target)) node.classList.remove("open");
-  });
-
-  content.appendChild(node);
-  if (state._currentTab) state._currentTab.elements.push(() => content.appendChild(node));
 }
 
 function ColorPicker(name, defaultColor, callback) {
-  const content = document.getElementById("content");
-  const node = el("div", { class: "el-colorpicker" });
-  node.appendChild(el("div", { text: name }));
-
-  const swatch = el("div", { class: "swatch" });
-  swatch.style.background = defaultColor || "#ff5a1e";
-  const inp = el("input", { type: "color" });
-  inp.value = defaultColor || "#ff5a1e";
-  inp.oninput = () => {
-    swatch.style.background = inp.value;
-    try { if (callback) callback(inp.value); }
-    catch (err) { console.error(err); }
-  };
-  swatch.appendChild(inp);
-  node.appendChild(swatch);
-
-  content.appendChild(node);
-  if (state._currentTab) state._currentTab.elements.push(() => content.appendChild(node));
+  appendElement((content) => {
+    const node = el("div", { class: "el-colorpicker" });
+    node.appendChild(el("div", { text: name }));
+    const swatch = el("div", { class: "swatch" });
+    swatch.style.background = defaultColor || "#ff5a1e";
+    const inp = el("input", { type: "color" });
+    inp.value = defaultColor || "#ff5a1e";
+    inp.oninput = () => {
+      swatch.style.background = inp.value;
+      try { if (callback) callback(inp.value); } catch (e) {}
+    };
+    swatch.appendChild(inp);
+    node.appendChild(swatch);
+    content.appendChild(node);
+  });
 }
 
 function Keybind(name, defaultKey, callback) {
-  const content = document.getElementById("content");
-  const node = el("div", { class: "el-keybind" });
-  node.appendChild(el("div", { text: name }));
-
-  const btn = el("button", { class: "key-btn", text: defaultKey || "F" });
-  let listening = false;
-
-  btn.onclick = () => {
-    if (listening) return;
-    listening = true;
-    btn.classList.add("listening");
-    btn.textContent = "...";
-
-    const onKey = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      listening = false;
-      btn.classList.remove("listening");
-      btn.textContent = e.key.toUpperCase();
-      document.removeEventListener("keydown", onKey, true);
-      try { if (callback) callback(e.key.toUpperCase()); }
-      catch (err) { console.error(err); }
+  appendElement((content) => {
+    const node = el("div", { class: "el-keybind" });
+    node.appendChild(el("div", { text: name }));
+    const btn = el("button", { class: "key-btn", text: defaultKey || "F" });
+    let listening = false;
+    btn.onclick = () => {
+      if (listening) return;
+      listening = true;
+      btn.classList.add("listening");
+      btn.textContent = "...";
+      const onKey = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        listening = false;
+        btn.classList.remove("listening");
+        btn.textContent = e.key.toUpperCase();
+        document.removeEventListener("keydown", onKey, true);
+        try { if (callback) callback(e.key.toUpperCase()); } catch (err) {}
+      };
+      document.addEventListener("keydown", onKey, true);
     };
-    document.addEventListener("keydown", onKey, true);
-  };
-
-  node.appendChild(btn);
-  content.appendChild(node);
-  if (state._currentTab) state._currentTab.elements.push(() => content.appendChild(node));
+    node.appendChild(btn);
+    content.appendChild(node);
+  });
 }
 
 // ============================================================
 // STATUS BAR
 // ============================================================
 function setStatus(text, type) {
-  const el = document.getElementById("status");
-  el.textContent = text;
-  el.className = "status" + (type ? " " + type : "");
+  const e = document.getElementById("status");
+  e.textContent = text;
+  e.className = "status" + (type ? " " + type : "");
 }
 
 // ============================================================
-// PARSER — Chuyển Lua code thành JS function calls
+// LUA PARSER — Full implementation
+// ============================================================
+
+// Tokenizer
+function tokenize(code) {
+  const tokens = [];
+  let i = 0;
+  while (i < code.length) {
+    const c = code[i];
+
+    // Whitespace
+    if (/\s/.test(c)) { i++; continue; }
+
+    // Comments --[[ ]] or -- line
+    if (c === '-' && code[i+1] === '-') {
+      if (code[i+2] === '[' && code[i+3] === '[') {
+        const end = code.indexOf(']]', i + 4);
+        i = end === -1 ? code.length : end + 2;
+        continue;
+      }
+      const nl = code.indexOf('\n', i);
+      i = nl === -1 ? code.length : nl;
+      continue;
+    }
+
+    // Strings "..." or '...'
+    if (c === '"' || c === "'") {
+      let str = '';
+      const quote = c;
+      i++;
+      while (i < code.length && code[i] !== quote) {
+        if (code[i] === '\\') { str += code[i+1]; i += 2; }
+        else { str += code[i]; i++; }
+      }
+      i++;
+      tokens.push({ type: 'string', value: str });
+      continue;
+    }
+
+    // Numbers
+    if (/[0-9]/.test(c) || (c === '.' && /[0-9]/.test(code[i+1]))) {
+      let num = '';
+      while (i < code.length && /[0-9.]/.test(code[i])) { num += code[i]; i++; }
+      tokens.push({ type: 'number', value: parseFloat(num) });
+      continue;
+    }
+
+    // Identifiers / keywords
+    if (/[a-zA-Z_]/.test(c)) {
+      let id = '';
+      while (i < code.length && /[a-zA-Z0-9_]/.test(code[i])) { id += code[i]; i++; }
+      tokens.push({ type: 'identifier', value: id });
+      continue;
+    }
+
+    // Operators / punctuation
+    const two = code.substring(i, i + 2);
+    if (two === '==' || two === '~=' || two === '<=' || two === '>=' || two === '..' || two === 'and' || two === 'or' || two === '..') {
+      // handle multi-char
+    }
+    if (two === '==') { tokens.push({ type: 'op', value: '==' }); i += 2; continue; }
+    if (two === '~=') { tokens.push({ type: 'op', value: '~=' }); i += 2; continue; }
+    if (two === '..') { tokens.push({ type: 'op', value: '..' }); i += 2; continue; }
+
+    if ('()[]{},.:+-*/%<>=;'.includes(c)) {
+      tokens.push({ type: 'punct', value: c });
+      i++;
+      continue;
+    }
+
+    // Unknown - skip
+    i++;
+  }
+  return tokens;
+}
+
+// Parser + Evaluator
+class LuaParser {
+  constructor(tokens, context) {
+    this.tokens = tokens;
+    this.pos = 0;
+    this.ctx = context;
+  }
+
+  peek() { return this.tokens[this.pos]; }
+  next() { return this.tokens[this.pos++]; }
+  expect(value) {
+    const t = this.peek();
+    if (!t || t.value !== value) throw new Error(`Expected "${value}" but got "${t ? t.value : 'EOF'}"`);
+    return this.next();
+  }
+  match(value) {
+    const t = this.peek();
+    if (t && t.value === value) { this.next(); return true; }
+    return false;
+  }
+
+  parse() {
+    while (this.pos < this.tokens.length) {
+      this.parseStatement();
+    }
+  }
+
+  parseStatement() {
+    const t = this.peek();
+    if (!t) return;
+
+    // "end" - stop (handled by block parser)
+    if (t.value === 'end') return;
+
+    // Local variable declaration: local x = ...
+    if (t.type === 'identifier' && t.value === 'local') {
+      this.next();
+      const name = this.next().value;
+      let value = null;
+      if (this.match('=')) value = this.parseExpression();
+      this.ctx[name] = value;
+      return;
+    }
+
+    // Return
+    if (t.type === 'identifier' && t.value === 'return') {
+      this.next();
+      return;
+    }
+
+    // Function call or expression
+    this.parseExpression();
+  }
+
+  parseBlock() {
+    const stmts = [];
+    while (this.pos < this.tokens.length) {
+      const t = this.peek();
+      if (!t || t.value === 'end' || t.value === 'else' || t.value === 'elseif') break;
+      this.parseStatement();
+    }
+  }
+
+  parseExpression() {
+    return this.parseOr();
+  }
+
+  parseOr() {
+    let left = this.parseAnd();
+    while (this.peek() && this.peek().type === 'identifier' && this.peek().value === 'or') {
+      this.next();
+      const right = this.parseAnd();
+      left = left || right;
+    }
+    return left;
+  }
+
+  parseAnd() {
+    let left = this.parseComparison();
+    while (this.peek() && this.peek().type === 'identifier' && this.peek().value === 'and') {
+      this.next();
+      const right = this.parseComparison();
+      left = left && right;
+    }
+    return left;
+  }
+
+  parseComparison() {
+    let left = this.parseConcat();
+    const t = this.peek();
+    if (t && (t.value === '==' || t.value === '~=' || t.value === '<' || t.value === '>' || t.value === '<=' || t.value === '>=')) {
+      this.next();
+      const right = this.parseConcat();
+      switch (t.value) {
+        case '==': left = left == right; break;
+        case '~=': left = left != right; break;
+        case '<': left = left < right; break;
+        case '>': left = left > right; break;
+        case '<=': left = left <= right; break;
+        case '>=': left = left >= right; break;
+      }
+    }
+    return left;
+  }
+
+  parseConcat() {
+    let left = this.parseAdditive();
+    while (this.peek() && this.peek().value === '..') {
+      this.next();
+      const right = this.parseAdditive();
+      left = String(left) + String(right);
+    }
+    return left;
+  }
+
+  parseAdditive() {
+    let left = this.parseMultiplicative();
+    while (this.peek() && (this.peek().value === '+' || this.peek().value === '-')) {
+      const op = this.next().value;
+      const right = this.parseMultiplicative();
+      left = op === '+' ? left + right : left - right;
+    }
+    return left;
+  }
+
+  parseMultiplicative() {
+    let left = this.parseUnary();
+    while (this.peek() && (this.peek().value === '*' || this.peek().value === '/' || this.peek().value === '%')) {
+      const op = this.next().value;
+      const right = this.parseUnary();
+      if (op === '*') left = left * right;
+      else if (op === '/') left = left / right;
+      else left = left % right;
+    }
+    return left;
+  }
+
+  parseUnary() {
+    const t = this.peek();
+    if (t && t.value === '-') {
+      this.next();
+      return -this.parseUnary();
+    }
+    if (t && t.type === 'identifier' && t.value === 'not') {
+      this.next();
+      return !this.parseUnary();
+    }
+    return this.parsePostfix();
+  }
+
+  parsePostfix() {
+    let value = this.parsePrimary();
+
+    while (this.pos < this.tokens.length) {
+      const t = this.peek();
+      if (!t) break;
+
+      // Function call
+      if (t.value === '(') {
+        const args = this.parseArgs();
+        if (typeof value === 'function') {
+          value = value.apply(null, args);
+        } else {
+          value = undefined;
+        }
+        continue;
+      }
+
+      // Method call / index
+      if (t.value === '.' || t.value === ':') {
+        this.next();
+        const name = this.next().value;
+        // Method call?
+        if (this.peek() && this.peek().value === '(') {
+          const args = this.parseArgs();
+          if (value && typeof value[name] === 'function') {
+            value = value[name].apply(value, args);
+          } else {
+            value = undefined;
+          }
+        } else {
+          value = value ? value[name] : undefined;
+        }
+        continue;
+      }
+
+      // Index
+      if (t.value === '[') {
+        this.next();
+        const idx = this.parseExpression();
+        this.expect(']');
+        value = value ? value[idx] : undefined;
+        continue;
+      }
+
+      break;
+    }
+
+    return value;
+  }
+
+  parseArgs() {
+    this.expect('(');
+    const args = [];
+    if (!this.match(')')) {
+      while (true) {
+        args.push(this.parseExpression());
+        if (this.match(',')) continue;
+        if (this.match(')')) break;
+        throw new Error("Expected , or ) in argument list");
+      }
+    }
+    return args;
+  }
+
+  parsePrimary() {
+    const t = this.next();
+    if (!t) throw new Error("Unexpected end of input");
+
+    if (t.type === 'string') return t.value;
+    if (t.type === 'number') return t.value;
+
+    if (t.type === 'identifier') {
+      const v = t.value;
+
+      // true / false / nil
+      if (v === 'true') return true;
+      if (v === 'false') return false;
+      if (v === 'nil') return null;
+
+      // function
+      if (v === 'function') {
+        return this.parseFunction();
+      }
+
+      // Look up in context
+      if (v in this.ctx) return this.ctx[v];
+
+      // Unknown - return undefined (as a function-like value so calls don't crash)
+      return undefined;
+    }
+
+    if (t.value === '(') {
+      const v = this.parseExpression();
+      this.expect(')');
+      return v;
+    }
+
+    if (t.value === '{') {
+      // Table
+      const arr = [];
+      const obj = {};
+      let idx = 1;
+      if (!this.match('}')) {
+        while (true) {
+          // [key] = value or key = value or just value
+          if (this.peek() && this.peek().value === '[') {
+            this.next();
+            const k = this.parseExpression();
+            this.expect(']');
+            this.expect('=');
+            const v = this.parseExpression();
+            obj[k] = v;
+          } else if (this.peek() && this.peek().type === 'identifier' &&
+                     this.tokens[this.pos+1] && this.tokens[this.pos+1].value === '=') {
+            const k = this.next().value;
+            this.next(); // =
+            const v = this.parseExpression();
+            obj[k] = v;
+          } else {
+            const v = this.parseExpression();
+            arr.push(v);
+          }
+          if (this.match(',')) continue;
+          if (this.match('}')) break;
+          if (this.match(';')) continue;
+          // try again
+          if (this.peek() && this.peek().value === '}') { this.next(); break; }
+          throw new Error("Malformed table");
+        }
+      }
+      // Merge
+      for (const k in obj) arr[k] = obj[k];
+      return arr;
+    }
+
+    return undefined;
+  }
+
+  parseFunction() {
+    this.expect('(');
+    const params = [];
+    if (!this.match(')')) {
+      while (true) {
+        const p = this.next();
+        if (!p || p.type !== 'identifier') throw new Error("Expected parameter name");
+        params.push(p.value);
+        if (this.match(',')) continue;
+        if (this.match(')')) break;
+        throw new Error("Expected , or ) in function params");
+      }
+    }
+
+    // Parse body until 'end'
+    const bodyStart = this.pos;
+    let depth = 0;
+    let bodyEnd = bodyStart;
+    while (bodyEnd < this.tokens.length) {
+      const t = this.tokens[bodyEnd];
+      if (t.type === 'identifier') {
+        if (t.value === 'function' || t.value === 'if' || t.value === 'for' || t.value === 'while') depth++;
+        else if (t.value === 'end') {
+          if (depth === 0) break;
+          depth--;
+        }
+      }
+      bodyEnd++;
+    }
+
+    const bodyTokens = this.tokens.slice(bodyStart, bodyEnd);
+    this.pos = bodyEnd;
+    this.expect('end');
+
+    // Return a JS function that, when called, creates a new parser and runs body
+    const self = this;
+    const fn = function(...args) {
+      const newCtx = Object.create(self.ctx);
+      for (let i = 0; i < params.length; i++) {
+        newCtx[params[i]] = args[i];
+      }
+      const subParser = new LuaParser(bodyTokens, newCtx);
+      try { subParser.parse(); }
+      catch (e) { console.warn("Function body error:", e.message); }
+    };
+    return fn;
+  }
+}
+
+// ============================================================
+// RUN
 // ============================================================
 function parseAndRun(code) {
-  // Reset status
   setStatus("Đang chạy...");
 
-  // Xoá menu cũ
+  // Reset
   document.getElementById("menu-window").classList.add("hidden");
   document.querySelectorAll(".kpc-logo, .kpc-avatar").forEach(n => n.remove());
   state.logo.el = null;
   state.avatar.el = null;
   state.tabs = [];
-  state._currentTab = null;
+  state.activeTab = null;
+  document.getElementById("content").innerHTML = "";
 
-  // Bind functions
+  // Context
   const ctx = {
     Window, Tab, Section, Label, Button, Toggle, Slider, Input, Dropdown,
     ColorPicker, Keybind, Notify,
     SetTheme: applyTheme,
     SetLogoEnabled: (v) => { state.logo.enabled = !!v; },
+    SetLogoImage: (url) => { state.logo.image = url; if (state.logo.el) state.logo.el.innerHTML = `<img src="${url}">`; },
     SetAvatarEnabled: (v) => { state.avatar.enabled = !!v; },
     SetAvatarSide: (v) => { state.avatar.side = v; },
+    print: (...args) => console.log(...args),
+    warn: (...args) => console.warn(...args),
+    task: {
+      wait: () => {},
+      spawn: (fn) => { try { fn(); } catch(e) {} },
+      delay: () => {},
+    },
+    wait: () => {},
   };
 
-  // Parse
   try {
-    runLuaLikeCode(code, ctx);
-    setStatus("✅ Chạy thành công", "success");
+    const tokens = tokenize(code);
+    const parser = new LuaParser(tokens, ctx);
+    parser.parse();
+    setStatus("✅ Chạy thành công (" + tokens.length + " tokens)", "success");
   } catch (err) {
     console.error(err);
     setStatus("❌ " + err.message, "error");
   }
-}
-
-// Simple Lua-like parser
-function runLuaLikeCode(code, ctx) {
-  // Remove comments
-  code = code.replace(/--\[\[[\s\S]*?\]\]/g, "");
-  code = code.replace(/--[^\n]*/g, "");
-
-  // Tokenize lines
-  const lines = code.split("\n").map(l => l.trim()).filter(l => l.length > 0);
-
-  // We'll process with a simple state machine
-  let i = 0;
-  const stack = []; // for nested blocks (functions)
-
-  // Match function(...) ... end
-  // We'll just evaluate line-by-line, replacing function(...) ... end with placeholders
-
-  const source = lines.join("\n");
-
-  // Replace "function() ... end" and "function(v) ... end" blocks with JS function placeholders
-  let processed = source;
-  let placeholderCounter = 0;
-  const callbacks = {};
-
-  // Recursively find function blocks
-  function replaceFunctions(str) {
-    const fnRegex = /function\s*\(([^)]*)\)([\s\S]*?)end/g;
-    let result = str;
-    let match;
-    while ((match = fnRegex.exec(result)) !== null) {
-      const args = match[1];
-      const body = match[2];
-      const placeholder = `__CB_${placeholderCounter++}__`;
-      // Convert body to JS statements
-      const jsBody = convertStatements(body);
-      callbacks[placeholder] = new Function(
-        ...args.split(",").map(a => a.trim()).filter(a => a),
-        jsBody
-      );
-      result = result.replace(match[0], placeholder);
-      // Restart regex on modified string
-      fnRegex.lastIndex = 0;
-    }
-    return result;
-  }
-
-  function convertStatements(body) {
-    // Convert KPCUI calls to ctx calls
-    return body
-      .split("\n")
-      .map(line => line.trim())
-      .filter(l => l)
-      .map(line => convertLine(line))
-      .join("\n");
-  }
-
-  function convertLine(line) {
-    // Notify("Title", "Content", 3)
-    // Button("Name", cb)
-    // etc.
-    // Convert to ctx.X(args)
-    return line.replace(
-      /\b(Window|Tab|Section|Label|Button|Toggle|Slider|Input|Dropdown|ColorPicker|Keybind|Notify|SetTheme|SetLogoEnabled|SetAvatarEnabled|SetAvatarSide)\b/g,
-      "ctx.$1"
-    );
-  }
-
-  processed = replaceFunctions(processed);
-
-  // Convert statements outside functions
-  const converted = convertStatements(processed);
-
-  // Replace placeholders
-  let finalCode = converted;
-  for (const ph in callbacks) {
-    finalCode = finalCode.split(ph).join("__CALLBACK_" + ph);
-  }
-
-  // Build execution context
-  const execCtx = Object.assign({}, ctx);
-  for (const ph in callbacks) {
-    execCtx["__CALLBACK_" + ph] = callbacks[ph];
-  }
-
-  // Execute
-  const fn = new Function(
-    ...Object.keys(execCtx),
-    finalCode
-  );
-  fn(...Object.values(execCtx));
 }
 
 // ============================================================
@@ -1607,13 +1734,8 @@ Dropdown("Aim Part", {"Head", "Torso", "Random", "Nearest"}, function(opt)
     Notify("Aim Part", "Đã chọn: " .. opt, 2)
 end)
 
-Slider("Aim FOV", 10, 360, 120, "°", function(v)
-    -- print("FOV:", v)
-end)
-
-Slider("Max Distance", 100, 2000, 500, " studs", function(v)
-    -- print("Dist:", v)
-end)
+Slider("Aim FOV", 10, 360, 120, "°", function(v) end)
+Slider("Max Distance", 100, 2000, 500, " studs", function(v) end)
 
 Keybind("Toggle Aimbot Key", "F", function(k)
     Notify("Keybind", "Đã đổi phím: " .. k, 2)
@@ -1644,17 +1766,10 @@ Toggle("Show Health", true)
 Toggle("Show Distance", true)
 
 Section("Colors")
-ColorPicker("Box Color", "#ff5a1e", function(c)
-    -- print("Box color:", c)
-end)
+ColorPicker("Box Color", "#ff5a1e", function(c) end)
+ColorPicker("Health Color", "#46dc6e", function(c) end)
 
-ColorPicker("Health Color", "#46dc6e", function(c)
-    -- print("Health color:", c)
-end)
-
-Slider("Max Distance", 50, 5000, 1000, " studs", function(v)
-    -- print(v)
-end)
+Slider("Max Distance", 50, 5000, 1000, " studs", function(v) end)
 
 Section("Team")
 Dropdown("Team Check", {"Enemy Only", "All Players", "Team Only"}, function(opt)
@@ -1699,10 +1814,7 @@ Button("Avatar bên trái", function()
 end)
 
 Section("Info")
-Input("Player Name", "Nhập tên...", function(text)
-    -- print("Name:", text)
-end)
-
+Input("Player Name", "Nhập tên...", function(text) end)
 Keybind("Toggle UI Key", "F1", function(k)
     Notify("Keybind", "Phím mới: " .. k, 2)
 end)`,
@@ -1734,22 +1846,12 @@ Toggle("Auto Farm", true, function(v)
 end)
 
 Section("Sliders")
-Slider("Walk Speed", 16, 500, 120, " studs", function(v)
-    -- print(v)
-end)
-
-Slider("Jump Power", 50, 300, 100, "", function(v)
-    -- print(v)
-end)
+Slider("Walk Speed", 16, 500, 120, " studs", function(v) end)
+Slider("Jump Power", 50, 300, 100, "", function(v) end)
 
 Section("Inputs")
-Input("Player Name", "Enter name...", function(text)
-    -- print(text)
-end)
-
-Input("Webhook URL", "https://...", function(text)
-    -- print(text)
-end)
+Input("Player Name", "Enter name...", function(text) end)
+Input("Webhook URL", "https://...", function(text) end)
 
 -- TAB 2: Visual
 Tab("Visual", "👁️")
@@ -1819,45 +1921,35 @@ end)`
 // INIT
 // ============================================================
 document.addEventListener("DOMContentLoaded", () => {
-  // Apply default theme
   applyTheme("BloodRed");
-
-  // Start logo/avatar tracking
   requestAnimationFrame(trackMenuPosition);
 
-  // Editor
   const editor = document.getElementById("code-editor");
 
-  // Tab support in textarea
+  // Tab key support
   editor.addEventListener("keydown", (e) => {
     if (e.key === "Tab") {
       e.preventDefault();
-      const start = editor.selectionStart;
-      const end = editor.selectionEnd;
-      editor.value = editor.value.substring(0, start) + "  " + editor.value.substring(end);
-      editor.selectionStart = editor.selectionEnd = start + 2;
+      const s = editor.selectionStart;
+      const e2 = editor.selectionEnd;
+      editor.value = editor.value.substring(0, s) + "    " + editor.value.substring(e2);
+      editor.selectionStart = editor.selectionEnd = s + 4;
     }
-  });
-
-  // Ctrl+Enter to run
-  editor.addEventListener("keydown", (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
       e.preventDefault();
       runCode();
     }
   });
 
-  // Run button
   document.getElementById("btn-run").onclick = runCode;
 
-  // Reset button
   document.getElementById("btn-reset").onclick = () => {
     document.getElementById("menu-window").classList.add("hidden");
     document.querySelectorAll(".kpc-logo, .kpc-avatar").forEach(n => n.remove());
     state.logo.el = null;
     state.avatar.el = null;
     state.tabs = [];
-    state._currentTab = null;
+    state.activeTab = null;
     document.getElementById("content").innerHTML = "";
     const sidebar = document.getElementById("sidebar");
     const search = document.getElementById("tab-search");
@@ -1867,7 +1959,6 @@ document.addEventListener("DOMContentLoaded", () => {
     setStatus("Đã reset");
   };
 
-  // Example selector
   document.getElementById("example-select").onchange = (e) => {
     const key = e.target.value;
     if (EXAMPLES[key]) {
@@ -1876,15 +1967,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Load default example
   editor.value = EXAMPLES.basic;
 
   function runCode() {
     const code = editor.value;
-    if (!code.trim()) {
-      setStatus("Code trống", "error");
-      return;
-    }
+    if (!code.trim()) { setStatus("Code trống", "error"); return; }
     parseAndRun(code);
   }
 });
