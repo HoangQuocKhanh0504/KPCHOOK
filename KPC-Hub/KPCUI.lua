@@ -519,7 +519,6 @@ local function BuildWindow(cfg)
     WinBtn("✕", -38, GetTheme().danger, Collapse)
     WinBtn("—", -74, GetTheme().accent, Collapse)
 
-    -- Drag
     do
         local dragging = false
         local dragOffset = Vector2.new(0, 0)
@@ -571,7 +570,6 @@ local function BuildWindow(cfg)
         end)
     end
 
-    -- Sidebar
     local SIDEBAR_W = isMobile and 130 or 160
 
     local Sidebar = Make("ScrollingFrame", {
@@ -654,7 +652,6 @@ local function BuildWindow(cfg)
         end)
     end)
 
-    -- Toggle keybind
     local toggleKey = cfg.ToggleUIKeybind or Enum.KeyCode.RightShift
     self._toggleKey = toggleKey
     UserInputService.InputBegan:Connect(function(input, gp)
@@ -664,7 +661,6 @@ local function BuildWindow(cfg)
         end
     end)
 
-    -- Search
     searchBox:GetPropertyChangedSignal("Text"):Connect(function()
         local q = searchBox.Text:lower()
         for _, t in ipairs(self._tabs) do
@@ -779,6 +775,8 @@ function Window:CreateTab(name, icon)
         self._activeTab = tab
     end
 
+    tab._select = select
+
     btn.MouseButton1Click:Connect(select)
     btn.MouseEnter:Connect(function()
         if self._activeTab ~= tab then
@@ -808,19 +806,9 @@ end
 
 function Window:SelectTab(name)
     for _, t in ipairs(self._tabs) do
-        if t._name == name then
-            t._btn.MouseButton1Click:Connect(function() end)
-            -- trigger select manually
-            for _, other in ipairs(self._tabs) do
-                if other == t then
-                    if self._activeTab ~= t then
-                        -- simulate click
-                        t._btn:GetPropertyChangedSignal
-                        -- Just set state
-                    end
-                end
-            end
-            break
+        if t._name == name and t._select then
+            t._select()
+            return
         end
     end
 end
@@ -831,15 +819,48 @@ function Window:UpdateStats(fps, ping)
     end
 end
 
-function Window:Collapse() if self._collapse then self._collapse() end end
-function Window:Expand()   if self._expand then self._expand() end end
+function Window:Collapse()
+    if self._collapse then self._collapse() end
+end
+
+function Window:Expand()
+    if self._expand then self._expand() end
+end
+
+function Window:IsVisible()
+    return self._main and self._main.Visible or false
+end
 
 function Window:SetTitle(text)
-    local tb = self._main and self._main:FindFirstChild("TitleBar")
+    if not self._main then return end
+    local tb = self._main:FindFirstChild("TitleBar")
     if not tb then return end
     for _, c in ipairs(tb:GetChildren()) do
         if c:IsA("TextLabel") and c.TextSize == 15 then
             c.Text = text
+        end
+    end
+end
+
+function Window:SetSubtitle(text)
+    if not self._main then return end
+    local tb = self._main:FindFirstChild("TitleBar")
+    if not tb then return end
+    for _, c in ipairs(tb:GetChildren()) do
+        if c:IsA("TextLabel") and c.TextSize == 11 and c.TextColor3 ~= GetTheme().textDim then
+            c.Text = text and ("• " .. text) or ""
+        end
+    end
+end
+
+function Window:Destroy()
+    if self._main then
+        pcall(function() self._main:Destroy() end)
+    end
+    for i, w in ipairs(Windows) do
+        if w == self then
+            table.remove(Windows, i)
+            break
         end
     end
 end
@@ -954,7 +975,10 @@ function Tab:CreateButton(cfg)
             rowStroke.Color = themeObj.stroke
         end
     end)
-    return row
+    local obj = { _row = row }
+    function obj:Set(v) row.Text = tostring(v) end
+    function obj:Get() return row.Text end
+    return obj
 end
 
 function Tab:CreateToggle(cfg)
@@ -1350,7 +1374,7 @@ function Tab:CreateDropdown(cfg)
         if not open then Tween(row, { BackgroundColor3 = GetTheme().panel }, 0.15) end
     end)
 
-    for i, opt in ipairs(options) do
+    local function BuildOption(i, opt)
         local o = Make("TextButton", {
             Size = UDim2.new(1, 0, 0, 24),
             BackgroundColor3 = GetTheme().panel2,
@@ -1380,6 +1404,10 @@ function Tab:CreateDropdown(cfg)
             end
         end)
         table.insert(optionButtons, o)
+    end
+
+    for i, opt in ipairs(options) do
+        BuildOption(i, opt)
     end
 
     if flag then FlagStore[flag] = { current } end
@@ -1414,35 +1442,7 @@ function Tab:CreateDropdown(cfg)
         end
         optionButtons = {}
         for i, opt in ipairs(options) do
-            local o = Make("TextButton", {
-                Size = UDim2.new(1, 0, 0, 24),
-                BackgroundColor3 = GetTheme().panel2,
-                Text = tostring(opt),
-                TextColor3 = GetTheme().text,
-                TextSize = 12,
-                Font = Enum.Font.Gotham,
-                AutoButtonColor = false,
-                BorderSizePixel = 0,
-                ZIndex = 61,
-                LayoutOrder = i,
-            }, content)
-            Corner(o, 6)
-            o.MouseEnter:Connect(function()
-                Tween(o, { BackgroundColor3 = GetTheme().panel }, 0.15)
-            end)
-            o.MouseLeave:Connect(function()
-                Tween(o, { BackgroundColor3 = GetTheme().panel2 }, 0.15)
-            end)
-            o.MouseButton1Click:Connect(function()
-                current = opt
-                valLbl.Text = tostring(opt) .. " ▾"
-                Close()
-                if flag then FlagStore[flag] = { current } end
-                if cfg.Callback then
-                    task.spawn(function() pcall(cfg.Callback, { current }) end)
-                end
-            end)
-            table.insert(optionButtons, o)
+            BuildOption(i, opt)
         end
         if keepCurrent and current then
             obj:Set(current)
@@ -1606,6 +1606,89 @@ function Tab:CreateColorPicker(cfg)
     return obj
 end
 
+function Tab:CreateKeybind(cfg)
+    cfg = cfg or {}
+    local flag = cfg.Flag
+    local currentKey = cfg.CurrentKeybind or Enum.KeyCode.Unknown
+
+    local row = Make("Frame", {
+        Size = UDim2.new(1, 0, 0, 36),
+        BackgroundColor3 = GetTheme().panel,
+        BorderSizePixel = 0,
+        LayoutOrder = NextOrder(self),
+        ZIndex = 7,
+    }, self._container)
+    Corner(row, 8)
+    local rowStroke = Stroke(row, GetTheme().stroke, 1)
+    local rowLbl = Make("TextLabel", {
+        Size = UDim2.new(1, -110, 1, 0),
+        Position = UDim2.fromOffset(12, 0),
+        BackgroundTransparency = 1,
+        Text = cfg.Name or "Keybind",
+        TextColor3 = GetTheme().text,
+        TextSize = 13,
+        Font = Enum.Font.Gotham,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 8,
+    }, row)
+    local valBtn = Make("TextButton", {
+        Size = UDim2.fromOffset(90, 24),
+        Position = UDim2.new(1, -102, 0.5, -12),
+        BackgroundColor3 = GetTheme().panel2,
+        Text = currentKey.Name,
+        TextColor3 = GetTheme().accent,
+        TextSize = 12,
+        Font = Enum.Font.GothamBold,
+        AutoButtonColor = false,
+        BorderSizePixel = 0,
+        ZIndex = 8,
+    }, row)
+    Corner(valBtn, 6)
+
+    local listening = false
+    valBtn.MouseButton1Click:Connect(function()
+        if listening then return end
+        listening = true
+        valBtn.Text = "..."
+        valBtn.TextColor3 = GetTheme().warning
+
+        local conn
+        conn = UserInputService.InputBegan:Connect(function(input, gp)
+            if gp then return end
+            if input.UserInputType ~= Enum.UserInputType.Keyboard then return end
+            if conn then conn:Disconnect(); conn = nil end
+            listening = false
+            currentKey = input.KeyCode
+            valBtn.Text = currentKey.Name
+            valBtn.TextColor3 = GetTheme().accent
+            if flag then FlagStore[flag] = currentKey end
+            if cfg.Callback then
+                task.spawn(function() pcall(cfg.Callback, currentKey) end)
+            end
+        end)
+    end)
+
+    if flag then FlagStore[flag] = currentKey end
+
+    RegisterThemeListener(function(themeObj)
+        if not row or not row.Parent then return end
+        row.BackgroundColor3 = themeObj.panel
+        rowLbl.TextColor3 = themeObj.text
+        rowStroke.Color = themeObj.stroke
+        valBtn.BackgroundColor3 = themeObj.panel2
+        if not listening then valBtn.TextColor3 = themeObj.accent end
+    end)
+
+    local obj = { _row = row }
+    function obj:Set(kc)
+        currentKey = kc
+        valBtn.Text = kc.Name
+        if flag then FlagStore[flag] = kc end
+    end
+    function obj:Get() return currentKey end
+    return obj
+end
+
 -- ============================================================
 -- PUBLIC API
 -- ============================================================
@@ -1625,6 +1708,10 @@ end
 
 function KPCUI:GetFlag(flag)
     return FlagStore[flag]
+end
+
+function KPCUI:GetAllFlags()
+    return FlagStore
 end
 
 function KPCUI:SetToggleKeybind(kc)
