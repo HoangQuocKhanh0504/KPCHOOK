@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KPCUI Playground — Trình mô phỏng GUI</title>
+<link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/HoangQuocKhanh0504/KPCHOOK@root/LOGO-KPCHOOK.png">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -117,9 +118,6 @@
   #preview-area {
     position: absolute;
     inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   /* ============ MENU WINDOW ============ */
@@ -137,9 +135,40 @@
     transform: translate(-50%, -50%);
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 90, 30, 0.1);
+    transform-origin: center center;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.25s ease,
+                width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  .menu-window.hidden { display: none !important; }
+  .menu-window.hidden {
+    display: none;
+  }
+
+  .menu-window.collapsed {
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
+
+  .menu-window.expanding {
+    animation: expandIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  .menu-window.collapsing {
+    animation: collapseOut 0.35s ease forwards;
+  }
+
+  @keyframes expandIn {
+    0% { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  }
+
+  @keyframes collapseOut {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+  }
 
   .menu-window .title-bar {
     height: 44px;
@@ -606,7 +635,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: opacity 0.2s;
+    transition: opacity 0.25s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: scale(1);
   }
   .kpc-logo img {
     width: 100%;
@@ -614,14 +644,7 @@
     object-fit: contain;
     filter: drop-shadow(0 0 20px var(--accent));
   }
-  .kpc-logo .placeholder {
-    font-size: 48px;
-    font-weight: 900;
-    color: var(--accent);
-    text-shadow: 0 0 20px var(--accent);
-    letter-spacing: -2px;
-  }
-  .kpc-logo.hidden { opacity: 0; pointer-events: none; }
+  .kpc-logo.hidden { opacity: 0; pointer-events: none; transform: scale(0.8); }
 
   .kpc-avatar {
     position: fixed;
@@ -634,11 +657,12 @@
     border: 3px solid var(--accent);
     z-index: 50;
     box-shadow: 0 0 20px rgba(255, 90, 30, 0.3);
-    transition: opacity 0.2s, border-color 0.3s;
+    transition: opacity 0.25s ease, border-color 0.3s, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     overflow: hidden;
+    transform: scale(1);
   }
   .kpc-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .kpc-avatar.hidden { opacity: 0; pointer-events: none; }
+  .kpc-avatar.hidden { opacity: 0; pointer-events: none; transform: scale(0.8); }
 
   /* ============ EDITOR ============ */
   .editor-header {
@@ -670,7 +694,7 @@
     font-size: 13px;
     line-height: 1.6;
     resize: none;
-    tab-size: 2;
+    tab-size: 4;
     white-space: pre;
     overflow: auto;
   }
@@ -762,6 +786,13 @@
 "use strict";
 
 // ============================================================
+// CONSTANTS
+// ============================================================
+const LOGO_URL = "https://cdn.jsdelivr.net/gh/HoangQuocKhanh0504/KPCHOOK@root/LOGO-KPCHOOK.png";
+const AVATAR_USER_ID = 20349956;
+const AVATAR_URL = "https://www.roblox.com/headshot-thumbnail/image?userId=" + AVATAR_USER_ID + "&width=420&height=420&format=png";
+
+// ============================================================
 // THEMES
 // ============================================================
 const THEMES = {
@@ -790,9 +821,12 @@ const state = {
   window: null,
   tabs: [],
   activeTab: null,
-  logo: { enabled: true, el: null, image: null },
-  avatar: { enabled: true, el: null, side: "Left" },
-  flags: {}
+  logo: { enabled: true, el: null, image: LOGO_URL },
+  avatar: { enabled: true, el: null, side: "Left", image: AVATAR_URL },
+  flags: {},
+  isOpen: true,
+  menuOffset: { x: 0, y: 0 },
+  isDragging: false
 };
 
 // ============================================================
@@ -829,7 +863,7 @@ function trackMenuPosition() {
   const logo = state.logo.el;
   const avatar = state.avatar.el;
 
-  if (!win || win.classList.contains("hidden")) {
+  if (!win || win.classList.contains("hidden") || !state.isOpen) {
     if (logo) logo.classList.add("hidden");
     if (avatar) avatar.classList.add("hidden");
     requestAnimationFrame(trackMenuPosition);
@@ -837,7 +871,7 @@ function trackMenuPosition() {
   }
 
   const rect = win.getBoundingClientRect();
-  if (rect.width < 50) {
+  if (rect.width < 100 || rect.height < 100) {
     if (logo) logo.classList.add("hidden");
     if (avatar) avatar.classList.add("hidden");
     requestAnimationFrame(trackMenuPosition);
@@ -845,9 +879,9 @@ function trackMenuPosition() {
   }
 
   if (logo && state.logo.enabled) {
-    const lgSize = 120;
+    const lgSize = 140;
     const lgX = rect.left + (rect.width - lgSize) / 2;
-    const lgY = rect.top - 20;
+    const lgY = rect.top - lgSize * 0.65;
     logo.style.left = lgX + "px";
     logo.style.top = lgY + "px";
     logo.style.width = lgSize + "px";
@@ -876,6 +910,33 @@ function trackMenuPosition() {
 }
 
 // ============================================================
+// COLLAPSE / EXPAND
+// ============================================================
+function collapseMenu() {
+  if (!state.isOpen) return;
+  state.isOpen = false;
+  const win = document.getElementById("menu-window");
+  if (!win) return;
+  win.classList.add("collapsing");
+  setTimeout(() => {
+    win.classList.remove("collapsing");
+    win.classList.add("hidden");
+  }, 340);
+}
+
+function expandMenu() {
+  if (state.isOpen) return;
+  state.isOpen = true;
+  const win = document.getElementById("menu-window");
+  if (!win) return;
+  win.classList.remove("hidden");
+  win.classList.add("expanding");
+  setTimeout(() => {
+    win.classList.remove("expanding");
+  }, 400);
+}
+
+// ============================================================
 // NOTIFY
 // ============================================================
 function Notify(title, content, duration) {
@@ -901,10 +962,12 @@ function Notify(title, content, duration) {
 // ============================================================
 function Window(name) {
   const win = document.getElementById("menu-window");
-  win.classList.remove("hidden");
+  win.classList.remove("hidden", "collapsing", "expanding");
   win.style.left = "50%";
   win.style.top = "50%";
   win.style.transform = "translate(-50%, -50%)";
+  state.isOpen = true;
+
   document.getElementById("window-title").textContent = name || "KPCUI";
   document.getElementById("window-subtitle").textContent = "";
   document.getElementById("window-stats").textContent = "FPS: 60 | Ping: 0 ms";
@@ -921,29 +984,33 @@ function Window(name) {
 
   document.getElementById("content").innerHTML = "";
 
-  // Create logo if not exists
+  // Logo
   if (!state.logo.el) {
     const logo = el("div", { class: "kpc-logo" });
-    if (state.logo.image) {
-      logo.appendChild(el("img", { src: state.logo.image }));
-    } else {
-      logo.appendChild(el("div", { class: "placeholder", text: "KPC" }));
-    }
+    const img = el("img", { src: state.logo.image, alt: "KPCUI Logo" });
+    img.onerror = () => {
+      // Fallback: try raw github
+      img.src = "https://raw.githubusercontent.com/HoangQuocKhanh0504/KPCHOOK/root/LOGO-KPCHOOK.png";
+    };
+    logo.appendChild(img);
     document.body.appendChild(logo);
     state.logo.el = logo;
   }
 
-  // Create avatar
+  // Avatar
   if (!state.avatar.el) {
     const avatar = el("div", { class: "kpc-avatar" });
-    // Dùng dicebear làm avatar mặc định
-    const avatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=KPC";
-    avatar.appendChild(el("img", { src: avatarUrl, alt: "avatar" }));
+    const img = el("img", { src: state.avatar.image, alt: "Avatar" });
+    img.onerror = () => {
+      // Fallback to dicebear
+      img.src = "https://api.dicebear.com/7.x/bottts/svg?seed=KPC" + AVATAR_USER_ID;
+    };
+    avatar.appendChild(img);
     document.body.appendChild(avatar);
     state.avatar.el = avatar;
   }
 
-  // Update stats
+  // Stats
   if (state._statsInterval) clearInterval(state._statsInterval);
   state._statsInterval = setInterval(() => {
     const fps = Math.floor(58 + Math.random() * 4);
@@ -960,27 +1027,26 @@ function Window(name) {
     });
   };
 
-  document.getElementById("btn-close").onclick = () => win.classList.add("hidden");
-  document.getElementById("btn-minimize").onclick = () => {
-    win.classList.add("hidden");
-    setTimeout(() => win.classList.remove("hidden"), 300);
-  };
+  document.getElementById("btn-close").onclick = () => collapseMenu();
+  document.getElementById("btn-minimize").onclick = () => collapseMenu();
 
   setupDrag();
   return state;
 }
 
+// ============================================================
+// DRAG
+// ============================================================
 function setupDrag() {
   const win = document.getElementById("menu-window");
   const bar = document.getElementById("title-bar");
   if (!win || !bar) return;
 
-  let dragging = false;
   let startX = 0, startY = 0, origX = 0, origY = 0;
 
   bar.onmousedown = (e) => {
     if (e.target.closest(".win-btn")) return;
-    dragging = true;
+    state.isDragging = true;
     const rect = win.getBoundingClientRect();
     win.style.transform = "none";
     win.style.left = rect.left + "px";
@@ -993,14 +1059,16 @@ function setupDrag() {
   };
 
   document.addEventListener("mousemove", (e) => {
-    if (!dragging) return;
+    if (!state.isDragging) return;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
     win.style.left = (origX + dx) + "px";
     win.style.top = (origY + dy) + "px";
   });
 
-  document.addEventListener("mouseup", () => { dragging = false; });
+  document.addEventListener("mouseup", () => {
+    state.isDragging = false;
+  });
 }
 
 // ============================================================
@@ -1028,7 +1096,6 @@ function Tab(name, icon) {
 
   sidebar.appendChild(btn);
 
-  // Auto-activate first tab
   if (state.tabs.length === 1) {
     btn.classList.add("active");
     state.activeTab = tabData;
@@ -1038,18 +1105,15 @@ function Tab(name, icon) {
   return tabData;
 }
 
-// Helper: append to current tab
 function appendElement(fn) {
   const content = document.getElementById("content");
   if (!state.activeTab) {
-    // Just append directly if no active tab
     fn(content);
     return;
   }
   state.activeTab.elements.push(() => fn(content));
-  // Only render if this is the active tab
-  const active = state.tabs.find(t => t.name === state.activeTab.name);
-  if (active === state.activeTab) {
+  const isActive = state.tabs.find(t => t === state.activeTab);
+  if (isActive === state.activeTab) {
     fn(content);
   }
 }
@@ -1234,20 +1298,16 @@ function setStatus(text, type) {
 }
 
 // ============================================================
-// LUA PARSER — Full implementation
+// LUA PARSER
 // ============================================================
-
-// Tokenizer
 function tokenize(code) {
   const tokens = [];
   let i = 0;
   while (i < code.length) {
     const c = code[i];
 
-    // Whitespace
     if (/\s/.test(c)) { i++; continue; }
 
-    // Comments --[[ ]] or -- line
     if (c === '-' && code[i+1] === '-') {
       if (code[i+2] === '[' && code[i+3] === '[') {
         const end = code.indexOf(']]', i + 4);
@@ -1259,7 +1319,6 @@ function tokenize(code) {
       continue;
     }
 
-    // Strings "..." or '...'
     if (c === '"' || c === "'") {
       let str = '';
       const quote = c;
@@ -1273,7 +1332,6 @@ function tokenize(code) {
       continue;
     }
 
-    // Numbers
     if (/[0-9]/.test(c) || (c === '.' && /[0-9]/.test(code[i+1]))) {
       let num = '';
       while (i < code.length && /[0-9.]/.test(code[i])) { num += code[i]; i++; }
@@ -1281,7 +1339,6 @@ function tokenize(code) {
       continue;
     }
 
-    // Identifiers / keywords
     if (/[a-zA-Z_]/.test(c)) {
       let id = '';
       while (i < code.length && /[a-zA-Z0-9_]/.test(code[i])) { id += code[i]; i++; }
@@ -1289,11 +1346,7 @@ function tokenize(code) {
       continue;
     }
 
-    // Operators / punctuation
     const two = code.substring(i, i + 2);
-    if (two === '==' || two === '~=' || two === '<=' || two === '>=' || two === '..' || two === 'and' || two === 'or' || two === '..') {
-      // handle multi-char
-    }
     if (two === '==') { tokens.push({ type: 'op', value: '==' }); i += 2; continue; }
     if (two === '~=') { tokens.push({ type: 'op', value: '~=' }); i += 2; continue; }
     if (two === '..') { tokens.push({ type: 'op', value: '..' }); i += 2; continue; }
@@ -1304,13 +1357,11 @@ function tokenize(code) {
       continue;
     }
 
-    // Unknown - skip
     i++;
   }
   return tokens;
 }
 
-// Parser + Evaluator
 class LuaParser {
   constructor(tokens, context) {
     this.tokens = tokens;
@@ -1340,11 +1391,8 @@ class LuaParser {
   parseStatement() {
     const t = this.peek();
     if (!t) return;
-
-    // "end" - stop (handled by block parser)
     if (t.value === 'end') return;
 
-    // Local variable declaration: local x = ...
     if (t.type === 'identifier' && t.value === 'local') {
       this.next();
       const name = this.next().value;
@@ -1354,28 +1402,15 @@ class LuaParser {
       return;
     }
 
-    // Return
     if (t.type === 'identifier' && t.value === 'return') {
       this.next();
       return;
     }
 
-    // Function call or expression
     this.parseExpression();
   }
 
-  parseBlock() {
-    const stmts = [];
-    while (this.pos < this.tokens.length) {
-      const t = this.peek();
-      if (!t || t.value === 'end' || t.value === 'else' || t.value === 'elseif') break;
-      this.parseStatement();
-    }
-  }
-
-  parseExpression() {
-    return this.parseOr();
-  }
+  parseExpression() { return this.parseOr(); }
 
   parseOr() {
     let left = this.parseAnd();
@@ -1449,54 +1484,37 @@ class LuaParser {
 
   parseUnary() {
     const t = this.peek();
-    if (t && t.value === '-') {
-      this.next();
-      return -this.parseUnary();
-    }
-    if (t && t.type === 'identifier' && t.value === 'not') {
-      this.next();
-      return !this.parseUnary();
-    }
+    if (t && t.value === '-') { this.next(); return -this.parseUnary(); }
+    if (t && t.type === 'identifier' && t.value === 'not') { this.next(); return !this.parseUnary(); }
     return this.parsePostfix();
   }
 
   parsePostfix() {
     let value = this.parsePrimary();
-
     while (this.pos < this.tokens.length) {
       const t = this.peek();
       if (!t) break;
 
-      // Function call
       if (t.value === '(') {
         const args = this.parseArgs();
-        if (typeof value === 'function') {
-          value = value.apply(null, args);
-        } else {
-          value = undefined;
-        }
+        if (typeof value === 'function') value = value.apply(null, args);
+        else value = undefined;
         continue;
       }
 
-      // Method call / index
       if (t.value === '.' || t.value === ':') {
         this.next();
         const name = this.next().value;
-        // Method call?
         if (this.peek() && this.peek().value === '(') {
           const args = this.parseArgs();
-          if (value && typeof value[name] === 'function') {
-            value = value[name].apply(value, args);
-          } else {
-            value = undefined;
-          }
+          if (value && typeof value[name] === 'function') value = value[name].apply(value, args);
+          else value = undefined;
         } else {
           value = value ? value[name] : undefined;
         }
         continue;
       }
 
-      // Index
       if (t.value === '[') {
         this.next();
         const idx = this.parseExpression();
@@ -1507,7 +1525,6 @@ class LuaParser {
 
       break;
     }
-
     return value;
   }
 
@@ -1534,21 +1551,11 @@ class LuaParser {
 
     if (t.type === 'identifier') {
       const v = t.value;
-
-      // true / false / nil
       if (v === 'true') return true;
       if (v === 'false') return false;
       if (v === 'nil') return null;
-
-      // function
-      if (v === 'function') {
-        return this.parseFunction();
-      }
-
-      // Look up in context
+      if (v === 'function') return this.parseFunction();
       if (v in this.ctx) return this.ctx[v];
-
-      // Unknown - return undefined (as a function-like value so calls don't crash)
       return undefined;
     }
 
@@ -1559,13 +1566,11 @@ class LuaParser {
     }
 
     if (t.value === '{') {
-      // Table
       const arr = [];
       const obj = {};
       let idx = 1;
       if (!this.match('}')) {
         while (true) {
-          // [key] = value or key = value or just value
           if (this.peek() && this.peek().value === '[') {
             this.next();
             const k = this.parseExpression();
@@ -1576,7 +1581,7 @@ class LuaParser {
           } else if (this.peek() && this.peek().type === 'identifier' &&
                      this.tokens[this.pos+1] && this.tokens[this.pos+1].value === '=') {
             const k = this.next().value;
-            this.next(); // =
+            this.next();
             const v = this.parseExpression();
             obj[k] = v;
           } else {
@@ -1586,12 +1591,10 @@ class LuaParser {
           if (this.match(',')) continue;
           if (this.match('}')) break;
           if (this.match(';')) continue;
-          // try again
           if (this.peek() && this.peek().value === '}') { this.next(); break; }
           throw new Error("Malformed table");
         }
       }
-      // Merge
       for (const k in obj) arr[k] = obj[k];
       return arr;
     }
@@ -1613,7 +1616,6 @@ class LuaParser {
       }
     }
 
-    // Parse body until 'end'
     const bodyStart = this.pos;
     let depth = 0;
     let bodyEnd = bodyStart;
@@ -1633,7 +1635,6 @@ class LuaParser {
     this.pos = bodyEnd;
     this.expect('end');
 
-    // Return a JS function that, when called, creates a new parser and runs body
     const self = this;
     const fn = function(...args) {
       const newCtx = Object.create(self.ctx);
@@ -1654,22 +1655,27 @@ class LuaParser {
 function parseAndRun(code) {
   setStatus("Đang chạy...");
 
-  // Reset
   document.getElementById("menu-window").classList.add("hidden");
   document.querySelectorAll(".kpc-logo, .kpc-avatar").forEach(n => n.remove());
   state.logo.el = null;
   state.avatar.el = null;
   state.tabs = [];
   state.activeTab = null;
+  state.isOpen = true;
   document.getElementById("content").innerHTML = "";
 
-  // Context
   const ctx = {
     Window, Tab, Section, Label, Button, Toggle, Slider, Input, Dropdown,
     ColorPicker, Keybind, Notify,
     SetTheme: applyTheme,
     SetLogoEnabled: (v) => { state.logo.enabled = !!v; },
-    SetLogoImage: (url) => { state.logo.image = url; if (state.logo.el) state.logo.el.innerHTML = `<img src="${url}">`; },
+    SetLogoImage: (url) => {
+      state.logo.image = url;
+      if (state.logo.el) {
+        const img = state.logo.el.querySelector("img");
+        if (img) img.src = url;
+      }
+    },
     SetAvatarEnabled: (v) => { state.avatar.enabled = !!v; },
     SetAvatarSide: (v) => { state.avatar.side = v; },
     print: (...args) => console.log(...args),
@@ -1677,9 +1683,9 @@ function parseAndRun(code) {
     task: {
       wait: () => {},
       spawn: (fn) => { try { fn(); } catch(e) {} },
-      delay: () => {},
+      delay: () => {}
     },
-    wait: () => {},
+    wait: () => {}
   };
 
   try {
@@ -1926,7 +1932,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const editor = document.getElementById("code-editor");
 
-  // Tab key support
   editor.addEventListener("keydown", (e) => {
     if (e.key === "Tab") {
       e.preventDefault();
@@ -1950,6 +1955,7 @@ document.addEventListener("DOMContentLoaded", () => {
     state.avatar.el = null;
     state.tabs = [];
     state.activeTab = null;
+    state.isOpen = true;
     document.getElementById("content").innerHTML = "";
     const sidebar = document.getElementById("sidebar");
     const search = document.getElementById("tab-search");
