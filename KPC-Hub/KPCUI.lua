@@ -1,12 +1,12 @@
 -- ============================================================
 -- KPCUI — Library giao diện cho Roblox Executor
 -- Tác giả: KPC
--- Version: 1.0.0
+-- Version: 1.1.0
 -- ============================================================
 
 local KPCUI = {}
 KPCUI.__index = KPCUI
-KPCUI.Version = "1.0.0"
+KPCUI.Version = "1.1.0"
 
 -- ============================================================
 -- SERVICES
@@ -203,6 +203,29 @@ local Windows        = {}
 local PARENT         = GetParentGui()
 local Destroyed      = false
 
+-- Logo + Avatar state
+local LogoConfig = {
+    Enabled = true,
+    Image = "https://cdn.jsdelivr.net/gh/HoangQuocKhanh0504/KPCHOOK@root/LOGO-KPCHOOK.png",
+    Size = 120,
+    OffsetY = 0,
+    CustomAsset = nil,  -- resolved asset ID
+    Frame = nil,
+    ImageLabel = nil,
+}
+
+local AvatarConfig = {
+    Enabled = true,
+    BorderColor = Color3.fromRGB(255, 90, 30),
+    BorderThickness = 3,
+    Side = "Left",  -- "Left" or "Right"
+    Size = 110,
+    OffsetY = 70,
+    Frame = nil,
+    Stroke = nil,
+    ImageLabel = nil,
+}
+
 -- ============================================================
 -- NOTIFY
 -- ============================================================
@@ -290,6 +313,191 @@ local function Notify(opts)
             BackgroundTransparency = 1,
         }, 0.35)
         tw.Completed:Connect(function() n:Destroy() end)
+    end)
+end
+
+-- ============================================================
+-- LOGO + AVATAR
+-- ============================================================
+local function ResolveAssetFromUrl(url)
+    if not url or url == "" then return nil end
+    if not (writefile and isfile and getcustomasset and makefolder) then return nil end
+
+    if not isfolder or not isfolder("kpchook") then
+        pcall(makefolder, "kpchook")
+    end
+
+    local hash = tostring(#url) .. "_" .. tostring(url:byte(1, 8):gsub("[^%w]", ""))
+    local path = "kpchook/_kpcui_" .. hash .. ".png"
+
+    if not isfile(path) then
+        local ok, data = pcall(function() return game:HttpGet(url, true) end)
+        if not ok or type(data) ~= "string" or #data < 100 then return nil end
+        local writeOk = pcall(function() writefile(path, data) end)
+        if not writeOk then return nil end
+    end
+
+    local ok, asset = pcall(getcustomasset, path)
+    if ok and asset then return asset end
+    return nil
+end
+
+local function CreateLogoFrame()
+    if LogoConfig.Frame and LogoConfig.Frame.Parent then return end
+    if not Screen or not Screen.Parent then return end
+
+    local frame = Make("Frame", {
+        Name = "KPCUI_Logo",
+        Size = UDim2.fromOffset(LogoConfig.Size, LogoConfig.Size),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Visible = false,
+        ZIndex = 9990,
+    }, Screen)
+    LogoConfig.Frame = frame
+
+    local img = Make("ImageLabel", {
+        Name = "LogoImage",
+        Size = UDim2.fromScale(1, 1),
+        BackgroundTransparency = 1,
+        Image = "",
+        ScaleType = Enum.ScaleType.Fit,
+        ZIndex = 9991,
+    }, frame)
+    LogoConfig.ImageLabel = img
+
+    task.spawn(function()
+        local asset = ResolveAssetFromUrl(LogoConfig.Image)
+        if asset and LogoConfig.ImageLabel and LogoConfig.ImageLabel.Parent then
+            LogoConfig.ImageLabel.Image = asset
+            LogoConfig.CustomAsset = asset
+        end
+    end)
+end
+
+local function CreateAvatarFrame()
+    if AvatarConfig.Frame and AvatarConfig.Frame.Parent then return end
+    if not Screen or not Screen.Parent then return end
+
+    local frame = Make("Frame", {
+        Name = "KPCUI_Avatar",
+        Size = UDim2.fromOffset(AvatarConfig.Size, AvatarConfig.Size),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Visible = false,
+        ZIndex = 9980,
+    }, Screen)
+    Corner(frame, 999)
+    AvatarConfig.Frame = frame
+
+    local stroke = Make("UIStroke", {
+        Name = "AvatarBorder",
+        Thickness = AvatarConfig.BorderThickness,
+        Color = AvatarConfig.BorderColor,
+    }, frame)
+    AvatarConfig.Stroke = stroke
+
+    local img = Make("ImageLabel", {
+        Name = "AvatarImage",
+        Size = UDim2.fromScale(1, 1),
+        BackgroundTransparency = 1,
+        Image = "rbxthumb://type=AvatarHeadShot&id=" .. tostring(lplr.UserId) .. "&w=420&h=420",
+        ZIndex = 9981,
+    }, img == nil and frame or frame)
+    Corner(img, 999)
+    AvatarConfig.ImageLabel = img
+end
+
+local function UpdateLogoVisibility()
+    if not LogoConfig.Frame or not LogoConfig.Frame.Parent then return end
+    if not LogoConfig.Enabled then
+        LogoConfig.Frame.Visible = false
+        return
+    end
+    if not Screen or not Screen.Parent then return end
+    local hasVisibleWindow = false
+    for _, w in ipairs(Windows) do
+        if w._main and w._main.Visible and w._main.AbsoluteSize.X > 50 then
+            hasVisibleWindow = true
+            break
+        end
+    end
+    if not hasVisibleWindow then
+        LogoConfig.Frame.Visible = false
+        return
+    end
+
+    local w = Windows[1]
+    if not w or not w._main then
+        LogoConfig.Frame.Visible = false
+        return
+    end
+
+    local pos = w._main.AbsolutePosition
+    local size = w._main.AbsoluteSize
+    local lgSize = LogoConfig.Size
+    local lgX = pos.X + (size.X - lgSize) / 2
+    local lgY = pos.Y + LogoConfig.OffsetY
+    local vp = workspace.CurrentCamera.ViewportSize
+    lgX = math.clamp(lgX, 0, math.max(0, vp.X - lgSize))
+    lgY = math.clamp(lgY, 0, math.max(0, vp.Y - lgSize))
+    LogoConfig.Frame.Position = UDim2.fromOffset(lgX, lgY)
+    LogoConfig.Frame.Size = UDim2.fromOffset(lgSize, lgSize)
+    LogoConfig.Frame.Visible = true
+end
+
+local function UpdateAvatarVisibility()
+    if not AvatarConfig.Frame or not AvatarConfig.Frame.Parent then return end
+    if not AvatarConfig.Enabled then
+        AvatarConfig.Frame.Visible = false
+        return
+    end
+    if not Screen or not Screen.Parent then return end
+    local hasVisibleWindow = false
+    for _, w in ipairs(Windows) do
+        if w._main and w._main.Visible and w._main.AbsoluteSize.X > 50 then
+            hasVisibleWindow = true
+            break
+        end
+    end
+    if not hasVisibleWindow then
+        AvatarConfig.Frame.Visible = false
+        return
+    end
+
+    local w = Windows[1]
+    if not w or not w._main then
+        AvatarConfig.Frame.Visible = false
+        return
+    end
+
+    local pos = w._main.AbsolutePosition
+    local size = w._main.AbsoluteSize
+    local avW = AvatarConfig.Size
+    local avH = AvatarConfig.Size
+    local avX, avY
+    if AvatarConfig.Side == "Right" then
+        avX = pos.X + size.X + 10
+    else
+        avX = pos.X - avW - 10
+    end
+    avY = pos.Y + AvatarConfig.OffsetY
+    local vp = workspace.CurrentCamera.ViewportSize
+    avX = math.clamp(avX, 0, math.max(0, vp.X - avW))
+    avY = math.clamp(avY, 0, math.max(0, vp.Y - avH))
+    AvatarConfig.Frame.Position = UDim2.fromOffset(avX, avY)
+    AvatarConfig.Frame.Visible = true
+end
+
+local function StartLogoAvatarLoop()
+    if KPCUI._logoLoopRunning then return end
+    KPCUI._logoLoopRunning = true
+    task.spawn(function()
+        while not Destroyed do
+            task.wait(0.05)
+            pcall(UpdateLogoVisibility)
+            pcall(UpdateAvatarVisibility)
+        end
     end)
 end
 
@@ -673,8 +881,31 @@ local function BuildWindow(cfg)
         end
     end)
 
+    -- Apply Logo config from cfg
+    if cfg.Logo then
+        if cfg.Logo.Enabled ~= nil then LogoConfig.Enabled = cfg.Logo.Enabled end
+        if cfg.Logo.Image then LogoConfig.Image = cfg.Logo.Image end
+        if cfg.Logo.Size then LogoConfig.Size = cfg.Logo.Size end
+        if cfg.Logo.OffsetY then LogoConfig.OffsetY = cfg.Logo.OffsetY end
+    end
+
+    -- Apply Avatar config from cfg
+    if cfg.Avatar then
+        if cfg.Avatar.Enabled ~= nil then AvatarConfig.Enabled = cfg.Avatar.Enabled end
+        if cfg.Avatar.BorderColor then AvatarConfig.BorderColor = cfg.Avatar.BorderColor end
+        if cfg.Avatar.BorderThickness then AvatarConfig.BorderThickness = cfg.Avatar.BorderThickness end
+        if cfg.Avatar.Side then AvatarConfig.Side = cfg.Avatar.Side end
+        if cfg.Avatar.Size then AvatarConfig.Size = cfg.Avatar.Size end
+        if cfg.Avatar.OffsetY then AvatarConfig.OffsetY = cfg.Avatar.OffsetY end
+    end
+
+    -- Create frames once
+    if LogoConfig.Enabled then CreateLogoFrame() end
+    if AvatarConfig.Enabled then CreateAvatarFrame() end
+
     Expand()
     table.insert(Windows, self)
+    StartLogoAvatarLoop()
     return self
 end
 
@@ -1757,6 +1988,113 @@ function KPCUI:GetScreen()
     return Screen
 end
 
+-- ============================================================
+-- LOGO API
+-- ============================================================
+function KPCUI:SetLogoEnabled(enabled)
+    LogoConfig.Enabled = enabled and true or false
+    if LogoConfig.Enabled and (not LogoConfig.Frame or not LogoConfig.Frame.Parent) then
+        CreateLogoFrame()
+    end
+    if LogoConfig.Frame then
+        LogoConfig.Frame.Visible = LogoConfig.Enabled
+    end
+end
+
+function KPCUI:SetLogoImage(url)
+    LogoConfig.Image = url
+    LogoConfig.CustomAsset = nil
+    if LogoConfig.ImageLabel then
+        LogoConfig.ImageLabel.Image = ""
+        task.spawn(function()
+            local asset = ResolveAssetFromUrl(url)
+            if asset and LogoConfig.ImageLabel and LogoConfig.ImageLabel.Parent then
+                LogoConfig.ImageLabel.Image = asset
+                LogoConfig.CustomAsset = asset
+            end
+        end)
+    end
+end
+
+function KPCUI:SetLogoSize(size)
+    LogoConfig.Size = tonumber(size) or LogoConfig.Size
+    if LogoConfig.Frame then
+        LogoConfig.Frame.Size = UDim2.fromOffset(LogoConfig.Size, LogoConfig.Size)
+    end
+end
+
+function KPCUI:SetLogoOffsetY(y)
+    LogoConfig.OffsetY = tonumber(y) or LogoConfig.OffsetY
+end
+
+function KPCUI:GetLogoConfig()
+    return {
+        Enabled = LogoConfig.Enabled,
+        Image = LogoConfig.Image,
+        Size = LogoConfig.Size,
+        OffsetY = LogoConfig.OffsetY,
+    }
+end
+
+-- ============================================================
+-- AVATAR API
+-- ============================================================
+function KPCUI:SetAvatarEnabled(enabled)
+    AvatarConfig.Enabled = enabled and true or false
+    if AvatarConfig.Enabled and (not AvatarConfig.Frame or not AvatarConfig.Frame.Parent) then
+        CreateAvatarFrame()
+    end
+    if AvatarConfig.Frame then
+        AvatarConfig.Frame.Visible = AvatarConfig.Enabled
+    end
+end
+
+function KPCUI:SetAvatarBorderColor(color)
+    if typeof(color) ~= "Color3" then return end
+    AvatarConfig.BorderColor = color
+    if AvatarConfig.Stroke then
+        AvatarConfig.Stroke.Color = color
+    end
+end
+
+function KPCUI:SetAvatarBorderThickness(thickness)
+    AvatarConfig.BorderThickness = tonumber(thickness) or AvatarConfig.BorderThickness
+    if AvatarConfig.Stroke then
+        AvatarConfig.Stroke.Thickness = AvatarConfig.BorderThickness
+    end
+end
+
+function KPCUI:SetAvatarSide(side)
+    if side == "Left" or side == "Right" then
+        AvatarConfig.Side = side
+    end
+end
+
+function KPCUI:SetAvatarSize(size)
+    AvatarConfig.Size = tonumber(size) or AvatarConfig.Size
+    if AvatarConfig.Frame then
+        AvatarConfig.Frame.Size = UDim2.fromOffset(AvatarConfig.Size, AvatarConfig.Size)
+    end
+end
+
+function KPCUI:SetAvatarOffsetY(y)
+    AvatarConfig.OffsetY = tonumber(y) or AvatarConfig.OffsetY
+end
+
+function KPCUI:GetAvatarConfig()
+    return {
+        Enabled = AvatarConfig.Enabled,
+        BorderColor = AvatarConfig.BorderColor,
+        BorderThickness = AvatarConfig.BorderThickness,
+        Side = AvatarConfig.Side,
+        Size = AvatarConfig.Size,
+        OffsetY = AvatarConfig.OffsetY,
+    }
+end
+
+-- ============================================================
+-- DESTROY
+-- ============================================================
 function KPCUI:Destroy()
     Destroyed = true
     for _, w in ipairs(Windows) do
@@ -1774,6 +2112,11 @@ function KPCUI:Destroy()
             end
         end
     end)
+    LogoConfig.Frame = nil
+    LogoConfig.ImageLabel = nil
+    AvatarConfig.Frame = nil
+    AvatarConfig.Stroke = nil
+    AvatarConfig.ImageLabel = nil
     ThemeListeners = {}
     FlagStore = {}
 end
