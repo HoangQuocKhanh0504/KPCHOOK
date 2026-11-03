@@ -1,12 +1,12 @@
-# KPCHOOK v5
+# KPCHOOK v6
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-5.0-orange)
+![Version](https://img.shields.io/badge/version-6.0-orange)
 ![Platform](https://img.shields.io/badge/platform-Roblox-blue)
 ![Language](https://img.shields.io/badge/language-Lua-purple)
 
-**Script hỗ trợ game bắn súng Roblox với đầy đủ tính năng Aimbot, ESP, Ragebot, Movement và nhiều hơn nữa**
+**Script toàn diện cho Rivals trên Roblox — Aimbot, Silent Aim, Ragebot, ESP, Cosmetics, World Visuals, Identity Spoofing và hơn thế nữa**
 
 [🇻🇳 Tiếng Việt](#-tiếng-việt) | [🇬🇧 English](#-english)
 
@@ -18,210 +18,244 @@
 
 ### 📖 Giới thiệu
 
-**KPCHOOK v5** là một script toàn diện dành cho game bắn súng trên Roblox (như *Duels*, *Wildcat*, *Energy Assault*...). Script cung cấp giao diện đẹp mắt với chủ đề tùy chỉnh, hỗ trợ song ngữ Việt - Anh, và hoạt động trên cả PC lẫn Mobile.
+**KPCHOOK v6** là script hỗ trợ toàn diện dành riêng cho **Rivals** trên Roblox. Được xây dựng trên kiến trúc **ReactiveStore** hiện đại với hệ thống **Config Profiles** mạnh mẽ, **Cosmetic Skin Changer**, **Movement Recorder**, **World Visuals**, **Identity Spoofing** và giao diện song ngữ Việt–Anh hoạt động mượt trên cả PC lẫn Mobile.
 
-### ✨ Tính năng chính
+> Script được **build riêng cho Rivals**. Nếu chạy ở game khác, script sẽ dừng và báo `PlayerScripts.Controllers not found` trong F9 console. Hãy xóa khỏi autoexec nếu không chơi Rivals.
+
+### ✨ Tính năng
+
+#### 🎯 Aimbot
+- Aim theo camera, khóa mục tiêu (Target Lock)
+- Aim Modes: **Lock / Linear / Spring / AI**
+- Target Lock Modes: **ToggleLock / AutoLock / ManualOnly** (keybind riêng)
+- Aim Point: **Center / Surface** (với Surface Reduction %, Preserve Depth)
+- Hitbox Selection: **ClosestToCrosshair / Random** (với trọng số Head %)
+- Activation Rules, Target Filters, Reaction Delay, Switch Delay
+- FOV tùy chỉnh (Radius, Thickness, Fill, Animated, Follow Target)
 
 #### 🎯 Silent Aim
-- Aim tự động không lộ (bullet bay thẳng vào đầu đối thủ)
-- Tùy chỉnh FOV, khoảng cách, cache time
-- Check Wall, Ignore Team
-- Hỗ trợ R6 và R15
+- Aim không lộ — bullet bay thẳng vào hitbox
+- Manipulate: **OnBestTarget / OnAllTargets** (đẩy hitbox khỏi tầm nhìn)
+- Activation Chance (%), Reaction Delay, Switch Delay
+- Activation Rules (NotReloading, ScopedIn)
+- Target Filters, Hitbox Selection, Aim Point như Aimbot
+- FOV + Follow Target
+- Hỗ trợ hitbox R6/R15: HitboxHead, HitboxBody, HitboxHeadSmall, HitboxBodySmall
 
-#### 🖱️ Mouse Aim (Aimbot)
-- Di chuyển chuột tự động vào mục tiêu
-- Chỉ aim khi giữ chuột phải (tùy chọn)
-- Tùy chỉnh độ nhạy, FOV, bộ phận aim
+#### 🎯 Triggerbot
+- Tự động bắn khi tâm ngắm vào địch
+- Reaction Delay, Release Delay
+- Activation Rules, Target Filters, Hitbox Selection
+
+#### 🖱️ Flickbot
+- Flick camera cực nhanh tới mục tiêu (Curvature + Humanness)
+- Flick Duration, Shot Delay, Cooldown
+- **Shoot** toggle (tự bắn sau khi flick)
 
 #### ⚡ Ragebot
-- **RageV1 (Aimbot)**: Aim cực nhanh, desync
-- **RageV2 (Ragebot)**: Tự động bắn, tự đổi vũ khí, auto pickup, auto respawn *(Premium)*
-- Tùy chỉnh Fire Rate, Desync Angles, Jitter...
+- **Hitscan Strategy** — bắn cực nhanh, desync
+- **Melee Strategy** — auto attack, auto backstab (Knife), Riot Shield
+- **Weapon Strategy**: Priority (Primary → Secondary → Melee), Enabled, On Empty (Reload/Swap/SwapOrReload)
+- **Evasion**: Random / Translocate / **ProjectileBreaker**
+  - ProjectileBreaker: DepthForward, DepthUp, Frequency, RepositionInterval, Fallback radius
+- **Utilize Health Lead**, **Prioritize Hackers**, **Shoot Frames**, **Stability**
+- **Reload Transport** — tự động reload khi hết đạn
+- **Forced Crouch** trong lúc rage
 
-#### 👁️ ESP
-- Highlight đối thủ theo % máu (xanh → vàng → đỏ)
-- Tùy chỉnh khoảng cách, màu sắc
-- Chỉ hiện khi cầm vũ khí
+#### 👁️ ESP (Player ESP)
+- **Box**: Full / Corner, Filled Box + Animation (Swirl)
+- **Box Image**: custom PNG
+- **Name**, **Health Bar** (Solid/Gradient/Reactive), **Health Number**
+- **Ammo Bar** (Solid/Gradient/Reactive)
+- **Held Weapon**, **Distance**, **Rank** (Rank Spoof), **Winstreak**, **Deflecting**
+- **Chams**: Legacy (BoxHandleAdornment) / Highlight + Glow
+- **Skeleton** (limb lines), **Head Marker** (Cross/Circle/Diamond), **Tracer** (Origin/Target/Outline)
+- **Text**: Font, Size, Case, Surround, Distance Scaling
+- **Team-specific** styling (Enemy / Team tabs riêng)
+- **Cull Heavy Operations** — tối ưu FPS ở khoảng cách xa
+
+#### 🎵 Sound ESP
+- Visualize footsteps và âm thanh khác
+- **Source**: All / Enemies / Team / Self
+- **Types**: Footsteps / Other
+- **Mode**: Circle / Origin
+- **Min Volume**, **Use Loudness Color**
+
+#### 🎨 Custom Crosshair
+- **Style**: Lines / Image
+- **Lines**: Length, Thickness, Gap, Outline, Top/Bottom/Left/Right (màu riêng)
+- **Rotation**: Angle (static) + Speed (spin)
+- **Spread**: Range Min/Max + Speed (animated)
+- **Animation**: Shimmer / Perimeter / PingPong
+- **Text**: Content, Font, Size, Offset, Color, Outline, Animation
+- **Follow Target**: Crosshair / Crosshair + Text
+- **Baked texture** tự động khi xoay (tối ưu hiệu năng)
+
+#### 🌀 Weapon Visuals
+- **Viewmodel Position**: X/Y/Z/Pitch/Yaw/Roll offset
+- **Bullet Tracers**: Style (Plain/Beam/Lightning/Trail/Zigzag/Heartrate/Chain/Glitch/Swirl)
+  - Width, Lifetime, FadeTime, TextureLength, TextureSpeed, Emission, Glow, Expand Speed/Damper
+- **Chams**: Arms / Held Item (Material, Color, Transparency, Strip Textures)
+- **ViewModel Highlight**: Fill/Outline, AlwaysOnTop
+- **Wireframe**: Arms / Held Item
+- **Suppressions**: NoMuzzleFlash, NoGunTracers, NoShoot/Sprint/Equip/Reload Animation, NoMotion, NoCameraShake, NoCameraSway, NoSpread
+- **Fire Rate Override**, **Recoil Reduction**, **Aim Speed**, **Cooldown Override**, **Melee Cooldown**, **Dash Cooldown**, **Extend Melee Range**, **Always Backstab**, **Infinite Double Jumps**
+- **Grenade Fuse**: Impact / Throw, Remove Fuse
 
 #### 🌀 Spin Camera
-- Xoay camera/nhân vật với tốc độ tùy chỉnh (50 → 1.000.000°/s)
-- Xoay ngang (yaw) hoặc dọc (pitch)
+- Xoay camera (yaw/pitch) với tốc độ tùy chỉnh
+- Spin Character *(Premium)*
 
 #### 🏃 Movement
-- **Speed**: Tăng tốc độ chạy, boost vận tốc vật lý
-- **Jump**: Nhảy cao tùy chỉnh
-- **Fly**: Bay tự do *(Premium)*
-- **Noclip**: Xuyên vật thể *(Premium)*
-- **Infinite Jump**: Nhảy vô hạn *(Premium)*
+- **Walk Speed**: Multiplier 1–10
+- **Sliding**: Multiplier riêng
+- **Jump Power**: Multiplier 0.1–10
+- **Flight**: Speed 25–500 *(Premium)*
+- **Noclip** *(Premium)*
+- **Auto Strafe**: Speed 1–200
+- **Long Jump**: Under Feet / Camera Look, Force, UpwardVelocity, Behind
+- **Infinite Double Jumps** *(Premium)*
 
-#### 🔓 Unlock All
-- Mở khóa toàn bộ Skin/Charm/Wrap
-- Mở khóa toàn bộ vũ khí *(Premium)*
-- Cho phép equip cosmetic
+#### 🎥 Movement Recorder
+- Ghi/phát lại route di chuyển
+- **Look Align Speed**, **Look Smoothness**, **Align Snap Distance**
+- **Open Distance**, **Render Distance**
+- **Recording Library** theo Map
+- **Record** và **Replay** keybind riêng
+- Phát lại có **Alignment Check** (tự phát hiện lệch hướng → dừng)
 
-#### 🤖 Auto Loadout
-- Tự động chọn vũ khí khi vào trận
-- 4 slot: Primary, Secondary, Melee, Utility
+#### 🔓 Cosmetics (Rivals)
+- **Unlock All Cosmetics**: Skin / Wrap / Charm / Finisher / Emote
+- **Unlock by Rarity**: Legendary, Mythical, Unobtainable, v.v.
+- **Skin Changer**: Apply To (All Weapons / từng weapon), Search
+- **Wrap Changer**: Inverted toggle
+- **Charm Changer** + **Rank Charm Override** (Season + Rank + Leaderboard Rank)
+- **Finisher Changer**
+- **Reroll Random Cosmetics**
+- **Cosmetic Preset Library**: Create / Load / Save / Delete / Export / Import
+- **Auto Save / Auto Load** preset
+- **Show Active Cosmetics**, **Share Skins** (UserServer)
 
-#### 🎨 Giao diện
-- 7 theme: BloodRed, DarkBlue, Amethyst, Green, Ocean, Serenity, Light
-- Tùy chỉnh Avatar border, Logo, vị trí menu
-- Watermark hiển thị FPS/Ping
-- Hỗ trợ Mobile (nút bấm nổi)
+#### 🎭 Player / Character / Identity
+- **Animation Player**: 26 emote có sẵn + Custom ID, Speed, Start/End range
+- **Character Chams**: Material, Color, Transparency, Strip Textures
+- **Device Spoof**: Desktop / Mobile / Console / VR
+- **Identity Spoofing**:
+  - **Local Player**: Name, DisplayName, Avatar, Ping, Keys, EventCurrency, Winstreak, Level, CasualWins, RankedWins, Win%, RankedELO, LeaderboardRank, FavoriteMap, NametagStatus (Prime/Contraband), Influencer, RobloxEmployee, VerifiedBadge, NosniyTeam
+  - **Other Players**: tương tự + Winstreak, Level, Wins, Win%, ELO, LeaderboardRank
+
+#### 🤖 Automation
+- **Auto Queue**: Chọn Queue từ Matchmaking + Arcade
+- **Auto Map Vote**: Chọn Maps
+- **Auto Weapon Ban**: First Ban + Second Ban choices
+- **Auto Loadout**: Per-Map / MultipleLoadouts / LoadoutPriority
+- **Auto Pickup**: Ammo / Health
+- **Auto Respawn**
+- **Anti Katana**
+- **Subspace Tripmines**: Auto Trigger, Team Trigger
+
+#### 🔍 Detection
+- **Hacker Detector**: Phát hiện speed hack, rotation bất thường — Notify, Color
+- **Moderator Detector**: Check group 3461453 rank ≥ 100 — Notify/Kick/ToLobby
+- **Mod Friends**: Bạn bè của moderator
+
+#### 🌍 World Visuals
+- **Lighting Override**:
+  - ClockTime, GeographicLatitude, Brightness, ExposureCompensation
+  - DisableGlobalShadows, ShadowSoftness, LightingStyle (Realistic/Soft), ShadowColor
+  - Ambient (Indoor/Outdoor), ColorShift (Top/Bottom)
+  - EnvironmentDiffuseScale, EnvironmentSpecularScale
+  - Fog (Color/Start/End), Atmosphere (Density/Offset/Glare/Haze)
+  - Prioritize Lighting Quality
+- **Post Processing**:
+  - Bloom (Intensity/Size/Threshold)
+  - ColorCorrection (Tint/Saturation/Brightness/Contrast)
+  - ColorGrading (Default/Retro)
+  - DepthOfField, MotionBlur, SunRays
+- **Skybox**: 39+ preset (GreenHaze, Space2, PinkMountains, Valentine, Galaxy, Storm, Nebula, Hell, v.v.) + Custom (6 face textures)
+- **Ambient Sound**: Soft Rain, Light Rain + Custom sound, Volume
+- **Weather**: Snow / Rain / Blizzard
+  - Intensity, Rate, Height, Speed, Glow, Size, Spread
+  - Wind Strength, Wind Angle
+- **Lightning**:
+  - Interval, Distance, Height, Thickness, Jaggedness, Branches, Flash
+  - Sparks: Count, Thickness, Distance, Speed, Jaggedness
+  - Explosion: Size, Bolts
+  - Sound: Volume, Delay (theo khoảng cách), Sound ID
+
+#### 🎨 UI / Theme
+- **7 theme**: BloodRed, DarkBlue, Amethyst, Green, Ocean, Serenity, Light
+- **Theme Colors**: Accent, Background, ElementBackground, Outline, SelectedTab, Text, ToggleCircle, ToggleBackground
+- **Language**: English / Tiếng Việt (lưu tại `kpchookv6/lang.cfg`)
+- **Menu Keybind** (mặc định `RightShift`)
+- **Show Watermark** (FPS + Ping + Username + Tier)
+- **Show Keybinds** (floating list có thể kéo)
+- **Hide Floating Menu Button** (Mobile)
+- **Edit On-screen Keybinds** (Mobile drag mode)
+- **Notifications**: Enabled, Side, Size, Font, Offset
+- **Config Profiles**: Create / Load / Save / Delete / Import / Export JSON
+- **Auto Save / Auto Load** config
+- **Silent Load** (không hiện menu khi load)
+- **Re-run After Teleport** (queue_on_teleport)
+- **Unload KPCHOOKv6**
+- **Search Palette** (Ctrl+F) tìm setting nhanh
+- **Sidebar** có thể thu gọn
+- **Info Admin** (avatar 4LC_KFJ2)
 
 ### 📦 Hướng dẫn cài đặt
 
-1. Mở executor (Delta, Fluxus, Arceus X, Hydrogen...)
-2. Copy toàn bộ nội dung file `KPCHOOK_v5.lua`
+1. Mở executor (**Delta, Fluxus, Arceus X, Hydrogen, Wave...**)
+2. Copy toàn bộ nội dung file `KPCHOOK_v6.lua`
 3. Paste vào executor và Execute
-4. Chọn ngôn ngữ và thiết bị ở lần chạy đầu tiên
-5. Mở menu bằng phím `RightShift`
+4. Chọn ngôn ngữ (English / Tiếng Việt) lần đầu — lưu tại `kpchookv6/lang.cfg`
+5. Script tự chờ `PlayerScripts.Controllers` sẵn sàng (tối đa 30s)
+6. Menu tự mở sau khi boot (trừ khi bật `Silent Load`)
+7. Mở/đóng menu bằng `RightShift`
 
 ### ⌨️ Phím tắt mặc định
 
 | Phím | Chức năng |
 |------|-----------|
 | `RightShift` | Mở/Đóng Menu |
-| `RightAlt` | Bật/Tắt Mouse Aim |
-| `RightControl` | Bật/Tắt Spin |
-| `8` | Toggle Unlock All Weapons |
-| `9` | Toggle Equip Cosmetic |
+| `Ctrl + F` | Mở Search Palette |
+| `Escape` | Đóng dialog/popup |
+| `↑` / `↓` | Di chuyển trong Search |
+| `Enter` | Chọn kết quả Search |
+
+> Keybind từng tính năng (Aimbot, Silent Aim, Triggerbot, Ragebot, Flickbot, Movement, Long Jump, Movement Recorder) được cấu hình trong menu Settings hoặc trực tiếp trong tab tương ứng.
 
 ### 💎 FREE vs PREMIUM
 
 | Tính năng | FREE | PREMIUM |
 |-----------|:----:|:-------:|
+| Aimbot | ✅ | ✅ |
 | Silent Aim | ✅ | ✅ |
-| Mouse Aim | ✅ | ✅ |
-| RageV1 | ✅ | ✅ |
-| RageV2 | ❌ | ✅ |
-| ESP | ✅ | ✅ |
-| Spin Camera | ✅ | ✅ |
-| Spin Character | ❌ | ✅ |
-| Speed/Jump | ✅ | ✅ |
-| Fly/Noclip/Infinite Jump | ❌ | ✅ |
-| Unlock Weapons | ❌ | ✅ |
-| Auto Respawn | ❌ | ✅ |
+| Triggerbot | ✅ | ✅ |
+| Flickbot | ✅ | ✅ |
+| Ragebot (RageV1 + RageV2 + Evasion) | ❌ | ✅ |
+| ESP (Player, Chams, Skeleton, Tracer, HeadMarker) | ✅ | ✅ |
+| Sound ESP | ✅ | ✅ |
+| Custom Crosshair | ✅ | ✅ |
+| Weapon Visuals (Tracers, Chams, Highlight, Wireframe) | ✅ | ✅ |
+| World Visuals (Lighting, PostFX, Sky, Weather, Lightning) | ✅ | ✅ |
+| Movement (WalkSpeed, Jump, Sliding, Flight, AutoStrafe, LongJump) | ✅ | ✅ |
+| Noclip | ❌ | ✅ |
+| Infinite Double Jumps | ❌ | ✅ |
+| Movement Recorder | ✅ | ✅ |
+| Cosmetics (Skin/Wrap/Charm/Finisher/Emote + Rank Charm) | ❌ | ✅ |
+| Identity Spoofing (Name, Avatar, Stats, Rank, Leaderboard) | ✅ | ✅ |
+| Device Spoof | ✅ | ✅ |
+| Animation Player | ✅ | ✅ |
+| Automation (Queue/Vote/Ban/Loadout/Pickup/Respawn) | ✅ | ✅ |
+| Hacker Detector | ✅ | ✅ |
+| Moderator Detector | ✅ | ✅ |
+
+> FREE chỉ thấy các tab trong `FREE_TABS`. Premium lấy tier từ API; nếu server down, script **retry vô hạn** mỗi 3s cho đến khi kết nối lại (chỉ dừng khi lỗi logic: key sai/hết hạn).
 
 ### 🌐 Mua Premium
 
 Truy cập: `https://kph-key.vyk103736.workers.dev/buy`
 
-### ⚠️ Lưu ý
+Hỗ trợ **multi-tier** — nếu tài khoản có nhiều gói, script hiện **Tier Picker** khi boot (chọn gói hoặc tự động chọn gói đầu sau 60s).
 
-- Script **không** lưu key của bạn lên server
-- Cấu hình được lưu tại `kpchook/kpchook.json`
-- Cần executor hỗ trợ: `hookmetamethod`, `getgc`, `mousemoverel`, `Drawing` (cho ESP)
-- Khuyến nghị dùng trên tài khoản phụ
-
----
-
-## 🇬🇧 English
-
-### 📖 Introduction
-
-**KPCHOOK v5** is a comprehensive script for Roblox shooter games (like *Duels*, *Wildcat*, *Energy Assault*...). It features a beautiful customizable UI, bilingual support (Vietnamese - English), and works on both PC and Mobile.
-
-### ✨ Key Features
-
-#### 🎯 Silent Aim
-- Invisible auto-aim (bullets fly straight to enemy's head)
-- Customizable FOV, distance, cache time
-- Check Wall, Ignore Team
-- Supports R6 and R15
-
-#### 🖱️ Mouse Aim (Aimbot)
-- Auto move mouse to target
-- Only aim while holding RMB (optional)
-- Customizable sensitivity, FOV, aim part
-
-#### ⚡ Ragebot
-- **RageV1 (Aimbot)**: Ultra-fast aim, desync
-- **RageV2 (Ragebot)**: Auto-fire, auto-switch weapons, auto pickup, auto respawn *(Premium)*
-- Customizable Fire Rate, Desync Angles, Jitter...
-
-#### 👁️ ESP
-- Highlight enemies by HP % (green → yellow → red)
-- Customizable distance, colors
-- Only show when holding weapon
-
-#### 🌀 Spin Camera
-- Spin camera/character at custom speed (50 → 1,000,000°/s)
-- Yaw or pitch rotation
-
-#### 🏃 Movement
-- **Speed**: Increase run speed, physics velocity boost
-- **Jump**: Custom jump height
-- **Fly**: Free flight *(Premium)*
-- **Noclip**: Walk through objects *(Premium)*
-- **Infinite Jump**: Unlimited jumping *(Premium)*
-
-#### 🔓 Unlock All
-- Unlock all Skins/Charms/Wraps
-- Unlock all weapons *(Premium)*
-- Allow equipping cosmetics
-
-#### 🤖 Auto Loadout
-- Auto-pick weapons on match start
-- 4 slots: Primary, Secondary, Melee, Utility
-
-#### 🎨 UI
-- 7 themes: BloodRed, DarkBlue, Amethyst, Green, Ocean, Serenity, Light
-- Custom Avatar border, Logo, menu position
-- Watermark showing FPS/Ping
-- Mobile support (floating button)
-
-### 📦 Installation
-
-1. Open an executor (Delta, Fluxus, Arceus X, Hydrogen...)
-2. Copy the entire content of `KPCHOOK_v5.lua`
-3. Paste into executor and Execute
-4. Select language and device on first run
-5. Open menu with `RightShift`
-
-### ⌨️ Default Keybinds
-
-| Key | Function |
-|-----|----------|
-| `RightShift` | Open/Close Menu |
-| `RightAlt` | Toggle Mouse Aim |
-| `RightControl` | Toggle Spin |
-| `8` | Toggle Unlock All Weapons |
-| `9` | Toggle Equip Cosmetic |
-
-### 💎 FREE vs PREMIUM
-
-| Feature | FREE | PREMIUM |
-|---------|:----:|:-------:|
-| Silent Aim | ✅ | ✅ |
-| Mouse Aim | ✅ | ✅ |
-| RageV1 | ✅ | ✅ |
-| RageV2 | ❌ | ✅ |
-| ESP | ✅ | ✅ |
-| Spin Camera | ✅ | ✅ |
-| Spin Character | ❌ | ✅ |
-| Speed/Jump | ✅ | ✅ |
-| Fly/Noclip/Infinite Jump | ❌ | ✅ |
-| Unlock Weapons | ❌ | ✅ |
-| Auto Respawn | ❌ | ✅ |
-
-### 🌐 Buy Premium
-
-Visit: `https://kph-key.vyk103736.workers.dev/buy`
-
-### ⚠️ Notes
-
-- The script **does not** store your key on any server
-- Config saved at `kpchook/kpchook.json`
-- Requires executor support: `hookmetamethod`, `getgc`, `mousemoverel`, `Drawing` (for ESP)
-- Recommended to use on alternate accounts
-
----
-
-<div align="center">
-
-**Made with ❤️ by KPCHOOK Team**
-
-*Script được cung cấp cho mục đích giáo dục. Sử dụng có trách nhiệm.*
-
-</div>
+### 📁 Cấu trúc file
